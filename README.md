@@ -424,7 +424,10 @@ The AI Teaching Assistant system using RAG architecture demonstrates:
 
 
 
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=Ratnesh-181998&theme=radical&hide_border=true&background=0D1117&stroke=4ECDC4&ring=F38181&fire=FF6B6B&currStreakLabel=4ECDC4" width="48%" />
+<img 
+  src="https://streak-stats.demolab.com?user=Ratnesh-181998&theme=radical&hide_border=true&background=0D1117&stroke=4ECDC4&ring=F38181&fire=FF6B6B&currStreakLabel=4ECDC4"
+  alt="GitHub Streak Stats"
+width="48%"/>
 
 
 
@@ -439,5 +442,6 @@ The AI Teaching Assistant system using RAG architecture demonstrates:
 
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer" width="100%">
+
 
 
