@@ -3610,22 +3610,6 @@ Format strictly in clean Markdown with:
                     const customBtn = document.getElementById('btn-google-signin');
                     if (customBtn) customBtn.style.display = 'none';
                 }
-
-                // Render official Google button into Sign-In pane
-                const signinContainer = document.getElementById('g_id_signin_render');
-                if (signinContainer) {
-                    signinContainer.innerHTML = '';
-                    google.accounts.id.renderButton(signinContainer, {
-                        theme: 'outline',
-                        size: 'large',
-                        width: 320,
-                        text: 'signin_with',
-                        shape: 'rectangular',
-                        logo_alignment: 'center'
-                    });
-                    const customBtn = document.getElementById('btn-google-signin');
-                    if (customBtn) customBtn.style.display = 'none';
-                }
             } catch (e) {
                 console.warn('Google Identity initialization notice:', e);
             }
