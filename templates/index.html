@@ -368,13 +368,13 @@
         }
 
         .view-panel {
-            display: none;
+            display: none !important;
             height: 100%;
             animation: panelFadeIn 0.22s ease-out;
         }
 
         .view-panel.active {
-            display: flex;
+            display: flex !important;
             flex-direction: column;
         }
 
@@ -840,8 +840,6 @@
         /* ==================================================== */
         .materials-view {
             padding: 28px 36px;
-            display: flex;
-            flex-direction: column;
             gap: 26px;
             max-width: 1080px;
             margin: 0 auto;
@@ -991,48 +989,70 @@
             background: var(--bg-card);
             border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 26px 28px;
             box-shadow: var(--shadow-warm-sm);
-            overflow-x: auto;
+            width: 100%;
         }
 
         .library-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             gap: 14px;
             flex-wrap: wrap;
+        }
+
+        .materials-table-wrapper {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 640px) {
+            .materials-table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
 
         .materials-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
-            min-width: 480px;
+            font-size: 0.92rem;
+            table-layout: fixed;
         }
 
         .materials-table th {
             text-align: left;
             padding: 12px 14px;
             color: var(--text-subtle);
-            font-size: 0.74rem;
+            font-size: 0.76rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-warm);
+            border-bottom: 1.5px solid var(--border-warm);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .materials-table td {
             padding: 14px;
-            border-bottom: 1px solid var(--border-warm);
+            border-bottom: 1px solid var(--border-warm-subtle);
             color: var(--text-body);
+            vertical-align: middle;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .materials-table tr:last-child td {
+            border-bottom: none;
         }
 
         .tag-type {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.72rem;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 0.74rem;
             font-weight: 700;
             text-transform: uppercase;
         }
@@ -1049,24 +1069,64 @@
         /* ==================================================== */
         .quiz-view, .summary-view, .analytics-view, .settings-view {
             padding: 28px 36px;
-            max-width: 920px;
+            max-width: 960px;
             margin: 0 auto;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+            gap: 26px;
         }
 
         .quiz-config-card {
             background: var(--bg-card);
             border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
-            padding: 22px;
+            padding: 28px 32px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 22px;
+            box-shadow: var(--shadow-warm-sm);
+        }
+
+        .quiz-config-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .quiz-config-fields {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
             gap: 16px;
             align-items: flex-end;
-            box-shadow: var(--shadow-warm-sm);
+        }
+
+        @media (max-width: 768px) {
+            .quiz-config-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-start-quiz {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border: none;
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(180, 83, 9, 0.28);
+            width: 100%;
+            letter-spacing: 0.01em;
+        }
+
+        .btn-start-quiz:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 22px rgba(180, 83, 9, 0.38);
         }
 
         .form-group {
@@ -1621,50 +1681,63 @@
                         </button>
                     </div>
 
-                    <table class="materials-table">
-                        <thead>
-                            <tr>
-                                <th>Source Title</th>
-                                <th>Type</th>
-                                <th>Chunks</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="materials-table-body">
-                            <tr>
-                                <td colspan="4" style="text-align:center; color:var(--text-subtle); padding:24px;">
-                                    Loading course materials...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="materials-table-wrapper">
+                        <table class="materials-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42%;">Source Title</th>
+                                    <th style="width:20%;">Type</th>
+                                    <th style="width:18%;">Chunks</th>
+                                    <th style="width:20%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materials-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:var(--text-subtle); padding:28px;">
+                                        Loading course materials...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- ================= VIEW 3: QUIZ & PRACTICE ================= -->
             <section id="view-quiz" class="view-panel quiz-view">
                 <div class="quiz-config-card">
-                    <div class="form-group">
-                        <label>Subtopic or Chapter (Optional)</label>
-                        <input type="text" id="quiz-topic" class="form-control-input" placeholder="e.g. RAG Architecture or All materials">
+                    <div class="quiz-config-header">
+                        <div class="card-icon" style="font-size:1.4rem;">🎯</div>
+                        <div>
+                            <h3 style="font-family:var(--font-heading); font-size:1.24rem; font-weight:700; color:var(--text-title);">Interactive Practice Quiz Generator</h3>
+                            <p style="font-size:0.84rem; color:var(--text-muted); margin-top:2px;">Test your mastery with instant AI-evaluated multiple-choice questions grounded in your course materials.</p>
+                        </div>
                     </div>
-                    <div class="form-group" style="max-width:140px;">
-                        <label>Questions</label>
-                        <select id="quiz-count" class="form-control-input">
-                            <option value="3">3 Questions</option>
-                            <option value="5" selected>5 Questions</option>
-                            <option value="10">10 Questions</option>
-                        </select>
+
+                    <div class="quiz-config-fields">
+                        <div class="form-group">
+                            <label>Subtopic or Chapter (Optional)</label>
+                            <input type="text" id="quiz-topic" class="form-control-input" placeholder="e.g. RAG Architecture, Vector DBs, or Entire Course">
+                        </div>
+                        <div class="form-group">
+                            <label>Questions</label>
+                            <select id="quiz-count" class="form-control-input">
+                                <option value="3">3 Questions</option>
+                                <option value="5" selected>5 Questions</option>
+                                <option value="10">10 Questions</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select id="quiz-difficulty" class="form-control-input">
+                                <option value="Easy">Easy (Foundations)</option>
+                                <option value="Medium" selected>Medium (Standard)</option>
+                                <option value="Hard">Challenging (Exam Prep)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group" style="max-width:140px;">
-                        <label>Difficulty</label>
-                        <select id="quiz-difficulty" class="form-control-input">
-                            <option value="Easy">Easy</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="Hard">Challenging</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" onclick="generateQuiz()" id="btn-generate-quiz">
+
+                    <button class="btn-start-quiz" onclick="generateQuiz()" id="btn-generate-quiz">
                         <span>🚀 Start Practice Quiz</span>
                     </button>
                 </div>
@@ -1708,16 +1781,26 @@
             <!-- ================= VIEW 4: STUDY GUIDE & 3D FLASHCARDS ================= -->
             <section id="view-summary" class="view-panel summary-view">
                 <div class="quiz-config-card">
-                    <div class="form-group">
-                        <label>Select Focus Topic for Study Guide & Flashcards</label>
-                        <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. All materials or System Architecture">
+                    <div class="quiz-config-header">
+                        <div class="card-icon" style="font-size:1.4rem;">💡</div>
+                        <div>
+                            <h3 style="font-family:var(--font-heading); font-size:1.24rem; font-weight:700; color:var(--text-title);">Executive Study Guide & 3D Flashcards</h3>
+                            <p style="font-size:0.84rem; color:var(--text-muted); margin-top:2px;">Generate high-yield revision summaries and spaced-repetition flashcards from your course notes.</p>
+                        </div>
                     </div>
-                    <button class="btn-primary" onclick="generateSummary()" id="btn-gen-summary">
-                        <span>⚡ Generate Study Guide</span>
-                    </button>
+
+                    <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1; min-width:240px;">
+                            <label>Select Focus Topic or Chapter (Optional)</label>
+                            <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. All materials or System Architecture">
+                        </div>
+                        <button class="btn-start-quiz" onclick="generateSummary()" id="btn-gen-summary" style="width:auto; padding:12px 28px;">
+                            <span>⚡ Generate Study Guide</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div id="summary-display-area" style="display:none; display:flex; flex-direction:column; gap:26px;">
+                <div id="summary-display-area" style="display:none; flex-direction:column; gap:26px;">
                     <!-- Executive Study Sheet -->
                     <div class="card-panel">
                         <h3 style="font-family:var(--font-heading); font-size:1.3rem; color:var(--text-title);">📋 Executive Study Guide</h3>
@@ -2371,7 +2454,7 @@
                     const tagClass = 'tag-' + (s.type || 'note');
                     return `
                         <tr>
-                            <td><strong>${escapeHtml(s.source)}</strong></td>
+                            <td><strong style="word-break:break-word; overflow-wrap:anywhere;">${escapeHtml(s.source)}</strong></td>
                             <td><span class="tag-type ${tagClass}">${escapeHtml(s.type)}</span></td>
                             <td>${s.chunks}</td>
                             <td>
