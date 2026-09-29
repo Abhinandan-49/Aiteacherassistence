@@ -10,13 +10,15 @@ from werkzeug.utils import secure_filename
 
 from config import Config
 from teaching_assistant import AITeachingAssistant
+from user_manager import UserManager
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
 CORS(app)
 
-# Initialize Core Teaching Assistant
+# Initialize Core Teaching Assistant and User Management
 ta = AITeachingAssistant()
+user_manager = UserManager()
 
 
 def allowed_file(filename: str) -> bool:
@@ -67,9 +69,85 @@ def update_settings():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/auth/register', methods=['POST'])
+def auth_register():
+    """Register a new student account with academic personalization"""
+    try:
+        data = request.get_json() or {}
+        name = data.get('name', '')
+        email = data.get('email', '')
+        password = data.get('password', '')
+        major = data.get('major', 'Computer Science')
+        level = data.get('academic_level', 'Undergraduate')
+        style = data.get('learning_style', 'Intuitive Analogies & Practical Examples')
+        goal = data.get('goal', 'Exam Preparation')
+
+        user, err = user_manager.register(
+            name=name,
+            email=email,
+            password=password,
+            major=major,
+            academic_level=level,
+            learning_style=style,
+            goal=goal
+        )
+
+        if err:
+            return jsonify({'success': False, 'error': err}), 400
+
+        return jsonify({'success': True, 'user': user, 'message': f'Welcome aboard, {user["name"]}!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    """Sign in an existing student account"""
+    try:
+        data = request.get_json() or {}
+        email = data.get('email', '')
+        password = data.get('password', '')
+
+        user, err = user_manager.authenticate(email, password)
+        if err:
+            return jsonify({'success': False, 'error': err}), 401
+
+        return jsonify({'success': True, 'user': user, 'message': f'Welcome back, {user["name"]}!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/auth/profile', methods=['GET', 'POST'])
+def auth_profile():
+    """Get or update student personalization profile"""
+    try:
+        if request.method == 'GET':
+            user_id = request.args.get('user_id')
+            email = request.args.get('email')
+            if not user_id and not email:
+                # Return default Abhinandan profile
+                user, _ = user_manager.authenticate('abhidubey2536@gmail.com', 'password123')
+                return jsonify({'success': True, 'user': user})
+
+            user = user_manager.get_user_by_id(user_id) if user_id else None
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            return jsonify({'success': True, 'user': user})
+        else:
+            data = request.get_json() or {}
+            user_id = data.get('user_id')
+            updates = data.get('updates', {})
+            user, err = user_manager.update_profile(user_id, updates)
+            if err:
+                return jsonify({'success': False, 'error': err}), 400
+            return jsonify({'success': True, 'user': user, 'message': 'Profile updated successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Ask a question to Professor Nova (RAG Powered)"""
+    """Ask a question to Professor Nova (RAG Powered & Personalized)"""
     try:
         data = request.get_json()
         if not data or 'question' not in data:
@@ -77,8 +155,13 @@ def chat():
 
         question = data['question']
         chat_history = data.get('history', [])
+        student_profile = data.get('profile')
+        user_id = data.get('user_id')
 
-        response = ta.ask(question, chat_history=chat_history)
+        if not student_profile and user_id:
+            student_profile = user_manager.get_user_by_id(user_id)
+
+        response = ta.ask(question, chat_history=chat_history, student_profile=student_profile)
         return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)}), 500

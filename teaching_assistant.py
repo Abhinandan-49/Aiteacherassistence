@@ -171,9 +171,10 @@ class AITeachingAssistant:
         except Exception as e:
             return {"success": False, "message": str(e)}
 
-    def ask(self, question: str, chat_history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
+    def ask(self, question: str, chat_history: Optional[List[Dict[str, str]]] = None, student_profile: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Query the AI Teaching Assistant with context retrieval and citation tracking
+        Query the AI Teaching Assistant with context retrieval, citation tracking,
+        and student personalization
         """
         question = question.strip()
         if not question:
@@ -230,6 +231,25 @@ class AITeachingAssistant:
             "- Question 3"
         )
 
+        # Personalization Profile Context
+        profile_context = ""
+        if student_profile and isinstance(student_profile, dict):
+            s_name = student_profile.get("name", "Student")
+            s_major = student_profile.get("major", "General Studies")
+            s_level = student_profile.get("academic_level", "Undergraduate")
+            s_style = student_profile.get("learning_style", "Intuitive & Practical")
+            s_goal = student_profile.get("goal", "Exam Preparation")
+            profile_context = (
+                f"STUDENT PERSONALIZATION PROFILE:\n"
+                f"- Name: {s_name}\n"
+                f"- Major / Field of Study: {s_major}\n"
+                f"- Academic Level: {s_level}\n"
+                f"- Preferred Learning Style: {s_style}\n"
+                f"- Primary Target Goal: {s_goal}\n\n"
+                f"PEDAGOGICAL INSTRUCTION:\n"
+                f"Address {s_name} by name in a warm faculty mentor tone. Connect concepts and analogies to their field ({s_major}) where appropriate, and tailor your explanation style to match {s_style}.\n\n"
+            )
+
         history_context = ""
         if chat_history and isinstance(chat_history, list):
             turns = []
@@ -242,6 +262,7 @@ class AITeachingAssistant:
                 history_context = "PREVIOUS CONVERSATION CONTEXT:\n" + "\n".join(turns) + "\n\n"
 
         user_prompt = (
+            f"{profile_context}"
             f"RELEVANT COURSE MATERIALS CONTEXT:\n{context_str}\n\n"
             f"{history_context}"
             f"STUDENT QUERY:\n{question}\n\n"

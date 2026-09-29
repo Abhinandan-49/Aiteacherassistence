@@ -1457,6 +1457,216 @@
             line-height: 1.25;
         }
 
+        /* Student Profile Dock */
+        .student-profile-dock {
+            margin: 12px 14px 4px 14px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: var(--glass-blur-sm);
+        }
+
+        .student-profile-dock:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: var(--border-warm-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-warm-sm);
+        }
+
+        .student-profile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(180, 83, 9, 0.2);
+        }
+
+        .student-profile-details {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .student-profile-name {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--text-title);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-profile-major {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-profile-gear {
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            opacity: 0.7;
+            transition: transform 0.2s ease;
+        }
+
+        .student-profile-dock:hover .student-profile-gear {
+            transform: rotate(45deg);
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(38, 25, 15, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 50px rgba(38, 25, 15, 0.18), 0 0 0 1px var(--border-warm);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 24px 14px 24px;
+            border-bottom: 1px solid var(--border-warm-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin: 0;
+        }
+
+        .modal-nav-tabs {
+            display: flex;
+            background: rgba(247, 241, 233, 0.8);
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--border-warm-subtle);
+            gap: 4px;
+        }
+
+        .modal-tab {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .modal-tab.active {
+            background: #ffffff;
+            color: var(--accent-primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-body {
+            padding: 22px 24px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .auth-form-group {
+            margin-bottom: 14px;
+        }
+
+        .auth-form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-body);
+            margin-bottom: 5px;
+        }
+
+        .auth-form-group input, .auth-form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-title);
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .auth-form-group input:focus, .auth-form-group select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 11px 18px;
+            background: var(--accent-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .auth-submit-btn:hover {
+            background: var(--accent-primary-hover);
+        }
+
         /* Loading Spinner */
         .spinner {
             width: 18px;
@@ -1569,6 +1779,16 @@
             </li>
         </ul>
 
+        <!-- Personal Student Profile Dock -->
+        <div class="student-profile-dock" id="student-profile-dock" onclick="openAuthModal('profile')" title="View or edit personalized learning settings">
+            <div class="student-profile-avatar" id="sidebar-user-avatar">AD</div>
+            <div class="student-profile-details">
+                <div class="student-profile-name" id="sidebar-user-name">Abhinandan Dubey</div>
+                <div class="student-profile-major" id="sidebar-user-major">💻 Computer Science</div>
+            </div>
+            <div class="student-profile-gear">⚙️</div>
+        </div>
+
         <div class="sidebar-footer">
             <div class="status-badge" id="gemini-status-pill">
                 <div class="status-dot" id="gemini-status-dot"></div>
@@ -1598,6 +1818,10 @@
                 </div>
                 <button class="btn-action-mini" id="clear-chat-btn" onclick="confirmClearChat()" title="Start a fresh study session" style="display:none; padding:4px 10px; font-size:0.78rem; background:rgba(255, 255, 255, 0.7); border:1px solid var(--border-warm);">
                     🧹 Clear Chat
+                </button>
+                <button class="btn-action-mini" id="btn-user-account" onclick="openAuthModal('profile')" title="Personalized Academic Profile" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; font-size:0.8rem; background:var(--accent-light); border:1px solid rgba(180, 83, 9, 0.25); color:var(--accent-tag); font-weight:600; border-radius:var(--radius-sm);">
+                    <span id="top-user-avatar-tag">👤</span>
+                    <span id="top-user-name-tag">Abhinandan</span>
                 </button>
                 <div class="chip-ai-model">
                     <span style="font-size:0.95rem;">🎓</span>
@@ -2010,7 +2234,8 @@
         const STORAGE_KEYS = {
             CHAT_HISTORY: 'prof_nova_chat_v2',
             ACTIVE_QUIZ: 'prof_nova_quiz_v2',
-            STUDY_GUIDE: 'prof_nova_guide_v2'
+            STUDY_GUIDE: 'prof_nova_guide_v2',
+            CURRENT_USER: 'prof_nova_user_v2'
         };
 
         // Global Application State
@@ -2025,6 +2250,7 @@
         let isGenerating = false;
         let currentAttachedFile = null;
         let chatMessagesHistory = [];
+        let currentUser = null;
 
         // View Titles (Humanized Academic Experience)
         const viewMeta = {
@@ -2351,7 +2577,12 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, history: recentHistory })
+                    body: JSON.stringify({
+                        question,
+                        history: recentHistory,
+                        profile: currentUser,
+                        user_id: currentUser ? currentUser.id : null
+                    })
                 });
 
                 const data = await response.json();
@@ -3151,10 +3382,250 @@ Format strictly in clean Markdown with:
             return div.innerHTML;
         }
 
+        // ================= AUTHENTICATION & PERSONALIZATION =================
+        async function initUserSession() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+                if (saved) {
+                    currentUser = JSON.parse(saved);
+                } else {
+                    // Fetch default Abhinandan profile
+                    const resp = await fetch('/api/auth/profile');
+                    const data = await resp.json();
+                    if (data.success && data.user) {
+                        currentUser = data.user;
+                        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+                    }
+                }
+                applyUserProfile(currentUser);
+            } catch (e) {
+                console.error("Failed to init user session:", e);
+            }
+        }
+
+        function applyUserProfile(user) {
+            if (!user) return;
+            const name = user.name || 'Abhinandan Dubey';
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'AD';
+            const major = user.major || 'Computer Science';
+
+            // Sidebar dock
+            const avatarEl = document.getElementById('sidebar-user-avatar');
+            const nameEl = document.getElementById('sidebar-user-name');
+            const majorEl = document.getElementById('sidebar-user-major');
+            if (avatarEl) avatarEl.textContent = initials;
+            if (nameEl) nameEl.textContent = name;
+            if (majorEl) majorEl.textContent = `💻 ${major}`;
+
+            // Top header button
+            const topTag = document.getElementById('top-user-name-tag');
+            if (topTag) topTag.textContent = name.split(' ')[0];
+
+            // Modal profile fields
+            const mAvatar = document.getElementById('modal-user-avatar');
+            const mName = document.getElementById('modal-user-name');
+            const mEmail = document.getElementById('modal-user-email');
+            if (mAvatar) mAvatar.textContent = initials;
+            if (mName) mName.textContent = name;
+            if (mEmail) mEmail.textContent = user.email || '';
+
+            const pName = document.getElementById('prof-name');
+            const pMajor = document.getElementById('prof-major');
+            const pLevel = document.getElementById('prof-level');
+            const pStyle = document.getElementById('prof-style');
+            const pGoal = document.getElementById('prof-goal');
+
+            if (pName) pName.value = name;
+            if (pMajor) pMajor.value = major;
+            if (pLevel && user.academic_level) pLevel.value = user.academic_level;
+            if (pStyle && user.learning_style) pStyle.value = user.learning_style;
+            if (pGoal) pGoal.value = user.goal || 'Exam Preparation';
+        }
+
+        function openAuthModal(tab = 'profile') {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                switchAuthTab(tab);
+                clearAuthAlert();
+            }
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function handleModalBackdropClick(event) {
+            if (event.target.id === 'auth-modal') {
+                closeAuthModal();
+            }
+        }
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+            const tabBtn = document.getElementById(`tab-btn-${tab}`);
+            if (tabBtn) tabBtn.classList.add('active');
+
+            ['profile', 'signin', 'signup'].forEach(t => {
+                const pane = document.getElementById(`auth-pane-${t}`);
+                if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
+            });
+            clearAuthAlert();
+        }
+
+        function showAuthAlert(msg, isError = false) {
+            const el = document.getElementById('auth-alert');
+            if (el) {
+                el.style.display = 'block';
+                el.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+                el.style.color = isError ? '#b91c1c' : '#047857';
+                el.style.border = isError ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)';
+                el.innerHTML = msg;
+            }
+        }
+
+        function clearAuthAlert() {
+            const el = document.getElementById('auth-alert');
+            if (el) el.style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-submit-login');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Signing In...`;
+
+            try {
+                const resp = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await resp.json();
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+                    applyUserProfile(currentUser);
+                    showAuthAlert(`✅ ${data.message}`);
+                    setTimeout(() => { closeAuthModal(); }, 700);
+                } else {
+                    showAuthAlert(`❌ ${data.error || 'Authentication failed.'}`, true);
+                }
+            } catch (err) {
+                showAuthAlert(`❌ Connection error: ${err.message}`, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>🔑 Sign In</span>`;
+            }
+        }
+
+        async function quickLoginDemo() {
+            document.getElementById('login-email').value = 'abhidubey2536@gmail.com';
+            document.getElementById('login-password').value = 'password123';
+            const fakeEvent = { preventDefault: () => {} };
+            await handleLogin(fakeEvent);
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const major = document.getElementById('reg-major').value.trim();
+            const level = document.getElementById('reg-level').value;
+            const btn = document.getElementById('btn-submit-register');
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Creating Account...`;
+
+            try {
+                const resp = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, major, academic_level: level })
+                });
+                const data = await resp.json();
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+                    applyUserProfile(currentUser);
+                    showAuthAlert(`🎉 Welcome, ${data.user.name}! Your personalized profile is active.`);
+                    setTimeout(() => { closeAuthModal(); }, 900);
+                } else {
+                    showAuthAlert(`❌ ${data.error || 'Registration failed.'}`, true);
+                }
+            } catch (err) {
+                showAuthAlert(`❌ Connection error: ${err.message}`, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>🎓 Create Student Account</span>`;
+            }
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const updates = {
+                name: document.getElementById('prof-name').value.trim(),
+                major: document.getElementById('prof-major').value.trim(),
+                academic_level: document.getElementById('prof-level').value,
+                learning_style: document.getElementById('prof-style').value,
+                goal: document.getElementById('prof-goal').value.trim()
+            };
+            const btn = document.getElementById('btn-save-profile');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Saving Preferences...`;
+
+            try {
+                const resp = await fetch('/api/auth/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.id, updates })
+                });
+                const data = await resp.json();
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+                    applyUserProfile(currentUser);
+                    showAuthAlert(`✅ Personalization preferences saved! Professor Nova will now tailor explanations to your ${currentUser.major} studies and ${currentUser.learning_style}.`);
+                } else {
+                    showAuthAlert(`❌ ${data.error || 'Failed to update profile.'}`, true);
+                }
+            } catch (err) {
+                showAuthAlert(`❌ Error: ${err.message}`, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>💾 Save My Personalization</span>`;
+            }
+        }
+
+        function handleLogout() {
+            if (confirm("Are you sure you want to sign out of your student account?")) {
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                currentUser = null;
+                const avatarEl = document.getElementById('sidebar-user-avatar');
+                const nameEl = document.getElementById('sidebar-user-name');
+                const majorEl = document.getElementById('sidebar-user-major');
+                if (avatarEl) avatarEl.textContent = '👤';
+                if (nameEl) nameEl.textContent = 'Guest Student';
+                if (majorEl) majorEl.textContent = 'Sign in to personalize';
+                const topTag = document.getElementById('top-user-name-tag');
+                if (topTag) topTag.textContent = 'Sign In';
+                switchAuthTab('signin');
+                showAuthAlert("You have signed out. Sign in anytime to restore your personalized profile.");
+            }
+        }
+
         // Run Initialization and Restore Saved State on Load
         window.addEventListener('DOMContentLoaded', async () => {
             checkHealth();
             loadMaterialsList();
+
+            // Initialize user session & personalization profile
+            await initUserSession();
 
             // Restore persistent states across browser sessions
             const chatRestored = loadChatFromLocalStorage();
@@ -3195,5 +3666,140 @@ Format strictly in clean Markdown with:
             }
         });
     </script>
+
+    <!-- Personalization & Student Account Modal -->
+    <div class="modal-backdrop" id="auth-modal" style="display:none;" onclick="handleModalBackdropClick(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.3rem;">🎓</span>
+                    <div>
+                        <h3 id="auth-modal-title">Student Profile & Personalization</h3>
+                        <span style="font-size:0.75rem; color:var(--text-muted);" id="auth-modal-subtitle">Customizes Professor Nova's explanations to your level & goals</span>
+                    </div>
+                </div>
+                <button class="btn-action-mini" onclick="closeAuthModal()" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+
+            <div class="modal-nav-tabs">
+                <button class="modal-tab active" id="tab-btn-profile" onclick="switchAuthTab('profile')">✨ Personalization</button>
+                <button class="modal-tab" id="tab-btn-signin" onclick="switchAuthTab('signin')">🔑 Sign In</button>
+                <button class="modal-tab" id="tab-btn-signup" onclick="switchAuthTab('signup')">📝 Create Account</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Status Alert message -->
+                <div id="auth-alert" style="display:none; padding:10px 14px; border-radius:10px; font-size:0.84rem; margin-bottom:14px;"></div>
+
+                <!-- TAB 1: PERSONALIZATION PROFILE -->
+                <div id="auth-pane-profile">
+                    <div style="background:rgba(180, 83, 9, 0.06); border:1px solid rgba(180, 83, 9, 0.18); border-radius:12px; padding:12px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="student-profile-avatar" id="modal-user-avatar" style="width:40px; height:40px; font-size:1rem;">AD</div>
+                            <div>
+                                <strong id="modal-user-name" style="font-size:0.95rem; color:var(--text-title);">Abhinandan Dubey</strong>
+                                <div id="modal-user-email" style="font-size:0.75rem; color:var(--text-muted);">abhidubey2536@gmail.com</div>
+                            </div>
+                        </div>
+                        <button class="btn-action-mini" onclick="handleLogout()" style="padding:4px 10px; font-size:0.75rem; color:#b91c1c; border-color:rgba(185, 28, 28, 0.3);">Sign Out</button>
+                    </div>
+
+                    <form onsubmit="handleUpdateProfile(event)">
+                        <div class="auth-form-group">
+                            <label>Full Student Name</label>
+                            <input type="text" id="prof-name" placeholder="e.g. Abhinandan Dubey" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Field of Study / Major</label>
+                            <input type="text" id="prof-major" placeholder="e.g. Computer Science & Engineering, Mechanical, etc." required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Academic Standing / Year</label>
+                            <select id="prof-level">
+                                <option value="High School">High School (K-12)</option>
+                                <option value="Undergraduate (1st/2nd Year)">Undergraduate (1st / 2nd Year)</option>
+                                <option value="Undergraduate (3rd/4th Year)">Undergraduate (3rd / 4th Year)</option>
+                                <option value="Master's / Graduate Student">Master's / Graduate Student</option>
+                                <option value="PhD Candidate / Researcher">PhD Candidate / Researcher</option>
+                                <option value="Self-Taught / Lifelong Learner">Self-Taught / Professional</option>
+                            </select>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Preferred Learning Style</label>
+                            <select id="prof-style">
+                                <option value="Intuitive Analogies & Practical Examples">🌱 Intuitive Analogies & Practical Code</option>
+                                <option value="First Principles & Mathematical Rigor">📐 First Principles & Mathematical Rigor</option>
+                                <option value="Concise Exam-Oriented Bullet Points">⚡ Fast Revision & Exam-Oriented Traps</option>
+                                <option value="Socratic Dialogue (Question & Probe)">❓ Socratic Dialogue (Guide me to the answer)</option>
+                            </select>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Current Study Goal</label>
+                            <input type="text" id="prof-goal" placeholder="e.g. Semester Finals, GATE/GRE, Coding Interviews">
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="btn-save-profile">
+                            <span>💾 Save My Personalization</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- TAB 2: SIGN IN -->
+                <div id="auth-pane-signin" style="display:none;">
+                    <form onsubmit="handleLogin(event)">
+                        <div class="auth-form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="login-email" placeholder="e.g. abhidubey2536@gmail.com" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Password</label>
+                            <input type="password" id="login-password" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="btn-submit-login">
+                            <span>🔑 Sign In</span>
+                        </button>
+                    </form>
+                    <div style="margin-top:14px; text-align:center;">
+                        <button type="button" class="btn-action-mini" onclick="quickLoginDemo()" style="width:100%; padding:9px 14px; font-size:0.84rem; background:rgba(255,255,255,0.8);">
+                            ⚡ Continue as Abhinandan Dubey (1-Click)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: SIGN UP -->
+                <div id="auth-pane-signup" style="display:none;">
+                    <form onsubmit="handleRegister(event)">
+                        <div class="auth-form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="reg-name" placeholder="e.g. Abhinandan Dubey" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="reg-email" placeholder="name@university.edu" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Password</label>
+                            <input type="password" id="reg-password" placeholder="Minimum 4 characters" minlength="4" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Degree / Major</label>
+                            <input type="text" id="reg-major" placeholder="e.g. Computer Science, Physics, Medicine" required>
+                        </div>
+                        <div class="auth-form-group">
+                            <label>Academic Level</label>
+                            <select id="reg-level">
+                                <option value="Undergraduate (3rd Year)">Undergraduate</option>
+                                <option value="Master's Student">Master's Student</option>
+                                <option value="High School">High School</option>
+                                <option value="PhD Candidate">PhD Candidate</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="btn-submit-register">
+                            <span>🎓 Create Student Account</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

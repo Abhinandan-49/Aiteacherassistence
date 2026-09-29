@@ -41,6 +41,8 @@ pdf_vector_store/
 wiki_vector_store/
 uploads/
 analytics_data/
+users_db.json
+users_data/
 
 # IDE
 .vscode/
