@@ -33,8 +33,8 @@ class Config:
     ANALYTICS_PATH = os.path.join(STORAGE_ROOT, 'analytics_data')
     
     # RAG Retrieval Settings
-    TOP_K_RESULTS = int(os.getenv('TOP_K_RESULTS', 4))
-    TEMPERATURE = float(os.getenv('TEMPERATURE', 0.4))
+    TOP_K_RESULTS = int(os.getenv('TOP_K_RESULTS', 6))
+    TEMPERATURE = float(os.getenv('TEMPERATURE', 0.3))
     
     # Supported File Extensions
     ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx', 'txt', 'md', 'csv', 'json', 'py', 'java', 'c', 'cpp'}

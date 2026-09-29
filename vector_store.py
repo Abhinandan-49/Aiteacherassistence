@@ -1,13 +1,14 @@
 """
 Vector Store Module
-Implements high-performance semantic search using Google Gemini Embeddings (text-embedding-004)
-with fallback term-frequency cosine vectorizer and persistent disk storage.
+Implements high-performance semantic search using Google Gemini Embeddings (gemini-embedding-2)
+with parallel chunk embedding, fallback dense vectorizer, hybrid keyword scoring, and persistent disk storage.
 """
 import os
 import json
 import math
 import re
 from typing import List, Tuple, Dict, Any, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 
 from config import Config
@@ -24,8 +25,7 @@ class FallbackVectorizer:
 
     @staticmethod
     def tokenize(text: str) -> List[str]:
-        words = re.findall(r'\b[a-zA-Z0-9_]{2,}\b', text.lower())
-        return words
+        return re.findall(r'\b[a-zA-Z0-9_]{2,}\b', text.lower())
 
     @classmethod
     def compute_embedding(cls, text: str, vocab: Dict[str, int]) -> np.ndarray:
@@ -43,7 +43,7 @@ class FallbackVectorizer:
 
 
 class VectorStoreManager:
-    """Manages document embeddings and similarity search"""
+    """Manages document embeddings and hybrid similarity search"""
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = (api_key or Config.GEMINI_API_KEY).strip()
@@ -70,42 +70,62 @@ class VectorStoreManager:
             print(f"Error creating GenAI client: {e}")
             return None
 
+    def _embed_single_text(self, client, model_name: str, text: str) -> Optional[List[float]]:
+        """Embed an individual document chunk"""
+        try:
+            clean_text = text.strip()
+            if not clean_text:
+                return None
+            # Truncate text if excessively long to avoid token limits
+            clean_text = clean_text[:3000]
+            resp = client.models.embed_content(
+                model=model_name,
+                contents=clean_text
+            )
+            if hasattr(resp, "embeddings") and resp.embeddings:
+                return resp.embeddings[0].values
+        except Exception as e:
+            print(f"Error embedding chunk: {e}")
+        return None
+
     def _embed_texts_gemini(self, texts: List[str]) -> Optional[np.ndarray]:
-        """Compute embeddings using Google GenAI API"""
+        """Compute embeddings using Google GenAI API with parallel worker threads"""
         client = self._get_gemini_client()
         if not client:
             return None
 
-        model_name = self.embedding_model
-        # Strip models/ prefix if needed
-        clean_model = model_name.replace("models/", "")
+        clean_model = self.embedding_model.replace("models/", "")
+        embeddings: List[Optional[List[float]]] = [None] * len(texts)
 
-        embeddings = []
-        # Batch in chunks of 20 to avoid payload limits
-        batch_size = 20
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
-            try:
-                resp = client.models.embed_content(
-                    model=clean_model,
-                    contents=batch
-                )
-                if hasattr(resp, "embeddings") and resp.embeddings:
-                    for item in resp.embeddings:
-                        embeddings.append(item.values)
-                else:
-                    return None
-            except Exception as e:
-                print(f"Gemini embedding API call failed: {e}")
-                return None
+        # Use ThreadPoolExecutor to embed chunks concurrently
+        max_workers = min(6, max(1, len(texts)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_idx = {
+                executor.submit(self._embed_single_text, client, clean_model, text): idx
+                for idx, text in enumerate(texts)
+            }
+            for future in as_completed(future_to_idx):
+                idx = future_to_idx[future]
+                try:
+                    result = future.result()
+                    embeddings[idx] = result
+                except Exception as e:
+                    print(f"Worker exception embedding chunk {idx}: {e}")
 
-        if embeddings:
-            return np.array(embeddings, dtype=np.float32)
-        return None
+        # Check if all or most embeddings succeeded
+        valid_vectors = [v for v in embeddings if v is not None]
+        if len(valid_vectors) == 0:
+            return None
+
+        # Replace any individual failures with mean vector
+        dim = len(valid_vectors[0])
+        mean_vec = np.mean(valid_vectors, axis=0).tolist()
+        final_embeddings = [v if v is not None else mean_vec for v in embeddings]
+
+        return np.array(final_embeddings, dtype=np.float32)
 
     def _embed_texts_fallback(self, texts: List[str]) -> np.ndarray:
         """Compute TF-IDF based dense vectors as reliable fallback"""
-        # Build vocabulary from all texts
         vocab: Dict[str, int] = {}
         for text in texts:
             for token in FallbackVectorizer.tokenize(text):
@@ -130,19 +150,16 @@ class VectorStoreManager:
         new_vectors = self._embed_texts_gemini(texts)
 
         if new_vectors is None:
-            # Fallback
             new_vectors = self._embed_texts_fallback(texts)
 
         if self.vectors is None or len(self.documents) == 0:
             self.documents = list(documents)
             self.vectors = new_vectors
         else:
-            # Check dimensions match
             if self.vectors.shape[1] == new_vectors.shape[1]:
                 self.documents.extend(documents)
                 self.vectors = np.vstack([self.vectors, new_vectors])
             else:
-                # Dimension changed (e.g. switched from fallback to Gemini or vice-versa), recompute all
                 self.documents.extend(documents)
                 self._recompute_all_vectors()
 
@@ -160,8 +177,21 @@ class VectorStoreManager:
             vecs = self._embed_texts_fallback(texts)
         self.vectors = vecs
 
+    @staticmethod
+    def _keyword_match_score(query: str, doc_text: str) -> float:
+        """Compute keyword overlap between query and document text"""
+        q_tokens = set(re.findall(r'\b[a-zA-Z0-9_]{3,}\b', query.lower()))
+        if not q_tokens:
+            return 0.0
+        doc_lower = doc_text.lower()
+        matches = sum(1 for token in q_tokens if token in doc_lower)
+        return matches / len(q_tokens)
+
     def similarity_search_with_score(self, query: str, k: Optional[int] = None) -> List[Tuple[Document, float]]:
-        """Find top-k most relevant document chunks with cosine similarity score"""
+        """
+        Find top-k most relevant document chunks using hybrid search:
+        combines semantic embedding cosine similarity + keyword matching
+        """
         if not self.documents or self.vectors is None or len(self.documents) == 0:
             return []
 
@@ -170,24 +200,20 @@ class VectorStoreManager:
 
         # Embed query
         query_vec = None
-        if self.vectors.shape[1] != 0:
-            # Try Gemini embedding
-            gemini_vecs = self._embed_texts_gemini([query])
-            if gemini_vecs is not None and gemini_vecs.shape[1] == self.vectors.shape[1]:
-                query_vec = gemini_vecs[0]
-            else:
-                # Match vocabulary of fallback vectors if possible
-                # If dimensions match fallback or simple term overlap
-                tokens = FallbackVectorizer.tokenize(query)
-                query_vec = np.zeros(self.vectors.shape[1], dtype=np.float32)
-                # Simple fallback scoring
-                for token in tokens:
-                    # Hash token to dimension index
-                    idx = abs(hash(token)) % self.vectors.shape[1]
-                    query_vec[idx] += 1.0
+        client = self._get_gemini_client()
+        if client and self.vectors.shape[1] > 200:
+            clean_model = self.embedding_model.replace("models/", "")
+            emb = self._embed_single_text(client, clean_model, query)
+            if emb is not None and len(emb) == self.vectors.shape[1]:
+                query_vec = np.array(emb, dtype=np.float32)
 
         if query_vec is None:
-            return [(doc, 0.5) for doc in self.documents[:k]]
+            # Fallback vector matching
+            tokens = FallbackVectorizer.tokenize(query)
+            query_vec = np.zeros(self.vectors.shape[1], dtype=np.float32)
+            for token in tokens:
+                idx = abs(hash(token)) % self.vectors.shape[1]
+                query_vec[idx] += 1.0
 
         q_norm = np.linalg.norm(query_vec)
         if q_norm > 0:
@@ -198,19 +224,26 @@ class VectorStoreManager:
         norms[norms == 0] = 1e-10
         normalized_vectors = self.vectors / norms
 
-        scores = np.dot(normalized_vectors, query_vec)
-        # Ensure 1D array
-        scores = np.squeeze(scores)
+        cos_scores = np.dot(normalized_vectors, query_vec)
+        cos_scores = np.squeeze(cos_scores)
+        if cos_scores.ndim == 0:
+            cos_scores = np.array([cos_scores])
 
-        if scores.ndim == 0:
-            scores = np.array([scores])
+        # Compute hybrid combined scores
+        final_scores = []
+        for idx, doc in enumerate(self.documents):
+            vec_s = float(cos_scores[idx]) if idx < len(cos_scores) else 0.0
+            kw_s = self._keyword_match_score(query, doc.page_content)
+            # Weighted hybrid score (70% semantic embedding + 30% exact keyword match)
+            combined = (0.70 * vec_s) + (0.30 * kw_s)
+            final_scores.append((idx, combined))
 
-        # Get top-k indices
-        top_indices = np.argsort(scores)[::-1][:k]
+        # Sort descending
+        final_scores.sort(key=lambda x: x[1], reverse=True)
+        top_k_indices = final_scores[:k]
 
         results = []
-        for idx in top_indices:
-            score_val = float(scores[idx])
+        for idx, score_val in top_k_indices:
             results.append((self.documents[idx], score_val))
 
         return results
