@@ -69,52 +69,6 @@ def update_settings():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/auth/register', methods=['POST'])
-def auth_register():
-    """Register a new student account with academic personalization"""
-    try:
-        data = request.get_json() or {}
-        name = data.get('name', '')
-        email = data.get('email', '')
-        password = data.get('password', '')
-        major = data.get('major', 'Computer Science')
-        level = data.get('academic_level', 'Undergraduate')
-        style = data.get('learning_style', 'Intuitive Analogies & Practical Examples')
-        goal = data.get('goal', 'Exam Preparation')
-
-        user, err = user_manager.register(
-            name=name,
-            email=email,
-            password=password,
-            major=major,
-            academic_level=level,
-            learning_style=style,
-            goal=goal
-        )
-
-        if err:
-            return jsonify({'success': False, 'error': err}), 400
-
-        return jsonify({'success': True, 'user': user, 'message': f'Welcome aboard, {user["name"]}!'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@app.route('/api/auth/login', methods=['POST'])
-def auth_login():
-    """Sign in an existing student account"""
-    try:
-        data = request.get_json() or {}
-        email = data.get('email', '')
-        password = data.get('password', '')
-
-        user, err = user_manager.authenticate(email, password)
-        if err:
-            return jsonify({'success': False, 'error': err}), 401
-
-        return jsonify({'success': True, 'user': user, 'message': f'Welcome back, {user["name"]}!'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/auth/config', methods=['GET'])

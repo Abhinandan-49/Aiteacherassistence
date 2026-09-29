@@ -3505,11 +3505,12 @@ Format strictly in clean Markdown with:
             if (pGoal) pGoal.value = user.goal || 'Exam Preparation';
         }
 
-        function openAuthModal(tab = 'profile') {
+        function openAuthModal(tab = null) {
             const modal = document.getElementById('auth-modal');
             if (modal) {
                 modal.style.display = 'flex';
-                switchAuthTab(tab);
+                const targetTab = tab || (currentUser ? 'profile' : 'signin');
+                switchAuthTab(targetTab);
                 clearAuthAlert();
             }
         }
@@ -3530,7 +3531,7 @@ Format strictly in clean Markdown with:
             const tabBtn = document.getElementById(`tab-btn-${tab}`);
             if (tabBtn) tabBtn.classList.add('active');
 
-            ['profile', 'signin', 'signup'].forEach(t => {
+            ['profile', 'signin'].forEach(t => {
                 const pane = document.getElementById(`auth-pane-${t}`);
                 if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
             });
@@ -3551,53 +3552,6 @@ Format strictly in clean Markdown with:
         function clearAuthAlert() {
             const el = document.getElementById('auth-alert');
             if (el) el.style.display = 'none';
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const btn = document.getElementById('btn-submit-login');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> Signing In...`;
-
-            try {
-                const resp = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await resp.json();
-                if (data.success && data.user) {
-                    currentUser = data.user;
-                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-                    applyUserProfile(currentUser);
-                    showAuthAlert(`✅ ${data.message}`);
-                    setTimeout(() => { closeAuthModal(); }, 700);
-                } else {
-                    showAuthAlert(`❌ ${data.error || 'Authentication failed.'}`, true);
-                }
-            } catch (err) {
-                showAuthAlert(`❌ Connection error: ${err.message}`, true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<span>🔑 Sign In</span>`;
-            }
-        }
-
-        async function quickLoginDemo() {
-            try {
-                const resp = await fetch('/api/auth/profile');
-                const data = await resp.json();
-                if (data.success && data.user) {
-                    document.getElementById('login-email').value = data.user.email;
-                    document.getElementById('login-password').value = 'password123';
-                    const fakeEvent = { preventDefault: () => {} };
-                    await handleLogin(fakeEvent);
-                }
-            } catch (err) {
-                console.warn(err);
-            }
         }
 
         // ====================================================
@@ -3657,20 +3611,20 @@ Format strictly in clean Markdown with:
                     if (customBtn) customBtn.style.display = 'none';
                 }
 
-                // Render official Google button into Sign-Up pane
-                const signupContainer = document.getElementById('g_id_signup_render');
-                if (signupContainer) {
-                    signupContainer.innerHTML = '';
-                    google.accounts.id.renderButton(signupContainer, {
+                // Render official Google button into Sign-In pane
+                const signinContainer = document.getElementById('g_id_signin_render');
+                if (signinContainer) {
+                    signinContainer.innerHTML = '';
+                    google.accounts.id.renderButton(signinContainer, {
                         theme: 'outline',
                         size: 'large',
                         width: 320,
-                        text: 'signup_with',
+                        text: 'signin_with',
                         shape: 'rectangular',
                         logo_alignment: 'center'
                     });
-                    const customRegBtn = document.getElementById('btn-google-signup');
-                    if (customRegBtn) customRegBtn.style.display = 'none';
+                    const customBtn = document.getElementById('btn-google-signin');
+                    if (customBtn) customBtn.style.display = 'none';
                 }
             } catch (e) {
                 console.warn('Google Identity initialization notice:', e);
@@ -3729,42 +3683,6 @@ Format strictly in clean Markdown with:
                 }
             } catch (err) {
                 showAuthAlert(`❌ Server error: ${err.message}`, true);
-            }
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const major = document.getElementById('reg-major').value.trim();
-            const level = document.getElementById('reg-level').value;
-            const btn = document.getElementById('btn-submit-register');
-
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> Creating Account...`;
-
-            try {
-                const resp = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password, major, academic_level: level })
-                });
-                const data = await resp.json();
-                if (data.success && data.user) {
-                    currentUser = data.user;
-                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-                    applyUserProfile(currentUser);
-                    showAuthAlert(`🎉 Welcome, ${data.user.name}! Your personalized profile is active.`);
-                    setTimeout(() => { closeAuthModal(); }, 900);
-                } else {
-                    showAuthAlert(`❌ ${data.error || 'Registration failed.'}`, true);
-                }
-            } catch (err) {
-                showAuthAlert(`❌ Connection error: ${err.message}`, true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<span>🎓 Create Student Account</span>`;
             }
         }
 
@@ -3886,9 +3804,8 @@ Format strictly in clean Markdown with:
             </div>
 
             <div class="modal-nav-tabs">
-                <button class="modal-tab active" id="tab-btn-profile" onclick="switchAuthTab('profile')">✨ Personalization</button>
-                <button class="modal-tab" id="tab-btn-signin" onclick="switchAuthTab('signin')">🔑 Sign In</button>
-                <button class="modal-tab" id="tab-btn-signup" onclick="switchAuthTab('signup')">📝 Create Account</button>
+                <button class="modal-tab active" id="tab-btn-signin" onclick="switchAuthTab('signin')">🔑 Google Sign In</button>
+                <button class="modal-tab" id="tab-btn-profile" onclick="switchAuthTab('profile')">✨ Personalization</button>
             </div>
 
             <div class="modal-body">
@@ -3947,108 +3864,42 @@ Format strictly in clean Markdown with:
                     </form>
                 </div>
 
-                <!-- TAB 2: SIGN IN -->
-                <div id="auth-pane-signin" style="display:none;">
-                    <!-- Google Sign-In Block -->
-                    <div class="google-auth-section" style="margin-bottom:12px;">
-                        <div id="g_id_signin_render" style="display:flex; justify-content:center; margin-bottom:8px;"></div>
-                        <button type="button" class="btn-google-auth" id="btn-google-signin" onclick="triggerGoogleSignIn()">
-                            <svg width="18" height="18" viewBox="0 0 48 48">
+                <!-- TAB 2: GOOGLE SIGN IN EXCLUSIVE -->
+                <div id="auth-pane-signin" style="display:none; text-align:center; padding:16px 8px 10px 8px;">
+                    <div style="width:64px; height:64px; margin:0 auto 16px; background:rgba(66, 133, 244, 0.08); border:1px solid rgba(66, 133, 244, 0.22); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(66, 133, 244, 0.12);">
+                        <svg width="32" height="32" viewBox="0 0 48 48">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                    </div>
+
+                    <h3 style="margin:0 0 8px 0; font-size:1.2rem; color:var(--text-title); font-weight:700;">Sign in with Google</h3>
+                    <p style="margin:0 auto 22px auto; max-width:340px; font-size:0.88rem; color:var(--text-muted); line-height:1.5;">
+                        Connect your verified Google account to personalize Professor Nova's teaching, sync study materials, and track your mastery.
+                    </p>
+
+                    <!-- Official Google Identity Services Mount Target -->
+                    <div id="g_id_signin_render" style="display:flex; justify-content:center; margin-bottom:12px; min-height:44px;"></div>
+
+                    <!-- Branded Interactive Google Button (Fallback) -->
+                    <div style="display:flex; justify-content:center;">
+                        <button type="button" class="btn-google-auth" id="btn-google-signin" onclick="triggerGoogleSignIn()" style="max-width:320px; width:100%;">
+                            <svg width="20" height="20" viewBox="0 0 48 48">
                                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                                 <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
                                 <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                             </svg>
-                            <span>Sign in with Google</span>
+                            <span>Continue with Google</span>
                         </button>
                     </div>
 
-                    <!-- Optional Setup Alert for Google Client ID -->
-                    <div id="google-setup-box-signin" style="display:none; background:rgba(66, 133, 244, 0.08); border:1px solid rgba(66, 133, 244, 0.28); border-radius:10px; padding:12px; margin-bottom:14px; font-size:0.8rem; color:var(--text-body);">
-                        <strong style="color:#1d4ed8; display:flex; align-items:center; gap:6px; margin-bottom:5px;">
-                            <span>🔐</span> Google OAuth Client ID Required
-                        </strong>
-                        <p style="margin:0 0 8px 0; line-height:1.4;">Paste your Google Web Client ID below or add <code>GOOGLE_CLIENT_ID</code> to <code>.env</code>:</p>
-                        <div style="display:flex; gap:6px;">
-                            <input type="text" id="quick-google-client-id" placeholder="xxxx.apps.googleusercontent.com" style="flex:1; padding:6px 9px; font-size:0.75rem; border:1px solid #93c5fd; border-radius:6px;">
-                            <button type="button" class="btn-action-mini" onclick="saveQuickClientId()" style="background:#2563eb; color:#fff; border-color:#2563eb; padding:5px 10px; font-size:0.75rem;">Save</button>
-                        </div>
+                    <div style="margin-top:26px; padding-top:16px; border-top:1px solid var(--border-warm-subtle); display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.78rem; color:var(--text-muted);">
+                        <span>🔒</span>
+                        <span>Official Google OAuth 2.0 • Safe, instant, & password-free</span>
                     </div>
-
-                    <div class="auth-divider">
-                        <span>or sign in with email</span>
-                    </div>
-
-                    <form onsubmit="handleLogin(event)">
-                        <div class="auth-form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="login-email" placeholder="student@university.edu" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>Password</label>
-                            <input type="password" id="login-password" placeholder="Enter password" required>
-                        </div>
-                        <button type="submit" class="auth-submit-btn" id="btn-submit-login">
-                            <span>🔑 Sign In</span>
-                        </button>
-                    </form>
-                    <div style="margin-top:14px; text-align:center;">
-                        <button type="button" class="btn-action-mini" onclick="quickLoginDemo()" style="width:100%; padding:9px 14px; font-size:0.84rem; background:rgba(255,255,255,0.8);">
-                            ⚡ Quick Demo Sign-In (1-Click)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- TAB 3: SIGN UP -->
-                <div id="auth-pane-signup" style="display:none;">
-                    <!-- Google Sign-Up Block -->
-                    <div class="google-auth-section" style="margin-bottom:12px;">
-                        <div id="g_id_signup_render" style="display:flex; justify-content:center; margin-bottom:8px;"></div>
-                        <button type="button" class="btn-google-auth" id="btn-google-signup" onclick="triggerGoogleSignIn()">
-                            <svg width="18" height="18" viewBox="0 0 48 48">
-                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                            </svg>
-                            <span>Sign up with Google</span>
-                        </button>
-                    </div>
-
-                    <div class="auth-divider">
-                        <span>or register with email</span>
-                    </div>
-
-                    <form onsubmit="handleRegister(event)">
-                        <div class="auth-form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="reg-name" placeholder="Enter your full name" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="reg-email" placeholder="name@university.edu" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>Password</label>
-                            <input type="password" id="reg-password" placeholder="Minimum 4 characters" minlength="4" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>Degree / Major</label>
-                            <input type="text" id="reg-major" placeholder="e.g. Computer Science, Physics, Medicine" required>
-                        </div>
-                        <div class="auth-form-group">
-                            <label>Academic Level</label>
-                            <select id="reg-level">
-                                <option value="Undergraduate (3rd Year)">Undergraduate</option>
-                                <option value="Master's Student">Master's Student</option>
-                                <option value="High School">High School</option>
-                                <option value="PhD Candidate">PhD Candidate</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="auth-submit-btn" id="btn-submit-register">
-                            <span>🎓 Create Student Account</span>
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
