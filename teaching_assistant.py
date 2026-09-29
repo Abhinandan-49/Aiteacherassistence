@@ -51,6 +51,42 @@ class AITeachingAssistant:
             print(f"Failed to initialize Gemini Client: {e}")
             return None
 
+    def _generate_with_fallback(self, client, contents, config=None):
+        """Generate content with model cascade fallbacks (handles 429 quota exhaustion and model availability)"""
+        models_to_try = [
+            self.model_name,
+            'gemini-flash-lite-latest',
+            'gemini-flash-latest',
+            'gemini-2.5-flash'
+        ]
+        seen = set()
+        unique_models = []
+        for m in models_to_try:
+            if m and m not in seen:
+                seen.add(m)
+                unique_models.append(m)
+
+        last_error = None
+        for model in unique_models:
+            try:
+                if config:
+                    return client.models.generate_content(
+                        model=model,
+                        contents=contents,
+                        config=config
+                    )
+                else:
+                    return client.models.generate_content(
+                        model=model,
+                        contents=contents
+                    )
+            except Exception as e:
+                err_str = str(e)
+                print(f"[Model Cascade] Model {model} failed ({type(e).__name__}: {err_str[:60]}), trying fallback...")
+                last_error = e
+                continue
+        raise last_error or RuntimeError("All Gemini model cascades failed.")
+
     def ingest_files(self, file_paths: List[str]) -> Dict[str, Any]:
         """Ingest multiple files (PDF, DOCX, PPTX, TXT, etc.) into the knowledge base"""
         all_docs: List[Document] = []
@@ -235,9 +271,9 @@ class AITeachingAssistant:
             }
 
         try:
-            # Call Gemini with proper system_instruction
-            response = client.models.generate_content(
-                model=self.model_name,
+            # Call Gemini with proper system_instruction and model cascade fallback
+            response = self._generate_with_fallback(
+                client=client,
                 contents=user_prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
@@ -320,14 +356,14 @@ class AITeachingAssistant:
         )
 
         try:
-            response = client.models.generate_content(
-                model=self.model_name,
+            response = self._generate_with_fallback(
+                client=client,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.3)
+                config=types.GenerateContentConfig(temperature=0.2, response_mime_type="application/json")
             )
 
             text = response.text.strip()
-            # Clean up potential markdown formatting
+            # Clean up potential markdown formatting if any
             if text.startswith("```json"):
                 text = text[7:]
             if text.startswith("```"):
@@ -336,12 +372,41 @@ class AITeachingAssistant:
                 text = text[:-3]
             text = text.strip()
 
+            match = re.search(r'\[\s*\{.*\}\s*\]', text, re.DOTALL)
+            if match:
+                text = match.group(0)
+
             questions = json.loads(text)
+            cleaned_questions = []
+            for idx, q in enumerate(questions):
+                opts = q.get("options", [])
+                ci = q.get("correct_index", 0)
+                if isinstance(ci, str):
+                    ci_str = ci.strip().upper()
+                    if ci_str in ['A', 'B', 'C', 'D']:
+                        ci = ord(ci_str) - ord('A')
+                    elif ci_str.isdigit():
+                        ci = int(ci_str)
+                    else:
+                        ci = 0
+                elif not isinstance(ci, int):
+                    ci = 0
+                
+                # Check for 1-based indexing
+                if ci == len(opts) and len(opts) > 0:
+                    ci = len(opts) - 1
+                if ci < 0 or (len(opts) > 0 and ci >= len(opts)):
+                    ci = 0
+
+                q["id"] = idx + 1
+                q["correct_index"] = ci
+                cleaned_questions.append(q)
+
             return {
                 "success": True,
                 "topic": topic or "Course Review",
                 "difficulty": difficulty,
-                "questions": questions
+                "questions": cleaned_questions
             }
         except Exception as e:
             return {
@@ -379,10 +444,10 @@ class AITeachingAssistant:
         )
 
         try:
-            response = client.models.generate_content(
-                model=self.model_name,
+            response = self._generate_with_fallback(
+                client=client,
                 contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.3)
+                config=types.GenerateContentConfig(temperature=0.3, response_mime_type="application/json")
             )
 
             text = response.text.strip()
@@ -393,6 +458,10 @@ class AITeachingAssistant:
             if text.endswith("```"):
                 text = text[:-3]
             text = text.strip()
+
+            match = re.search(r'\{.*\}', text, re.DOTALL)
+            if match:
+                text = match.group(0)
 
             data = json.loads(text)
             return {

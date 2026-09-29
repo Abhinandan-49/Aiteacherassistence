@@ -669,6 +669,44 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pedagogical-lenses {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border-warm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lens-label {
+            font-size: 0.74rem;
+            color: var(--text-subtle);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .lens-pill {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+            color: var(--text-title);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lens-pill:hover {
+            border-color: var(--accent-primary);
+            background: var(--accent-soft);
+            color: var(--accent-primary);
+            transform: translateY(-1px);
         }
 
         .btn-action-mini {
@@ -1491,8 +1529,8 @@
         <div class="brand-box">
             <div class="brand-avatar">🎓</div>
             <div class="brand-text">
-                <h1>Professor Nova</h1>
-                <span>Teaching Assistant</span>
+                <h1>Prof. Nova</h1>
+                <span>Academic Faculty Mentor</span>
             </div>
         </div>
 
@@ -1500,39 +1538,33 @@
             <li class="nav-item active">
                 <button onclick="switchView('chat')">
                     <span class="nav-icon">💬</span>
-                    <span>Tutor Chat</span>
-                    <span class="badge-pill" id="badge-chat">Active</span>
+                    <span>Office Hours & Doubts</span>
+                    <span class="badge-pill" id="badge-chat">Open</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button onclick="switchView('materials')">
-                    <span class="nav-icon">📚</span>
-                    <span>Course Materials</span>
+                    <span class="nav-icon">📖</span>
+                    <span>Course Library & Notes</span>
                     <span class="badge-pill" id="badge-materials">1 Doc</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button onclick="switchView('quiz')">
                     <span class="nav-icon">🎯</span>
-                    <span>Quiz & Practice</span>
+                    <span>Exam Drill & Practice</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button onclick="switchView('summary')">
-                    <span class="nav-icon">💡</span>
-                    <span>Study Guide & Cards</span>
+                    <span class="nav-icon">📑</span>
+                    <span>Study Guides & Flashcards</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button onclick="switchView('analytics')">
-                    <span class="nav-icon">📈</span>
-                    <span>Learning Progress</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button onclick="switchView('settings')">
-                    <span class="nav-icon">⚙️</span>
-                    <span>API & Settings</span>
+                    <span class="nav-icon">📊</span>
+                    <span>My Mastery & Progress</span>
                 </button>
             </li>
         </ul>
@@ -1540,7 +1572,7 @@
         <div class="sidebar-footer">
             <div class="status-badge" id="gemini-status-pill">
                 <div class="status-dot" id="gemini-status-dot"></div>
-                <span id="gemini-status-text">Gemini 2.5 Active</span>
+                <span id="gemini-status-text" style="font-weight:600;">Office Hours: Open</span>
             </div>
         </div>
     </aside>
@@ -1554,15 +1586,15 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <div class="heading-text">
-                    <h2 id="top-title">Tutor Chat & Doubts</h2>
-                    <p id="top-subtitle">Ask questions from your course lecture notes, slides, and PDFs</p>
+                    <h2 id="top-title">Faculty Office Hours & Doubts</h2>
+                    <p id="top-subtitle">Personal academic mentorship, concept breakdowns, and exam preparation</p>
                 </div>
             </div>
 
             <div class="header-status-group">
                 <div class="chip-ai-model">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    <span id="current-model-label">Gemini 2.5 Flash</span>
+                    <span style="font-size:0.95rem;">🎓</span>
+                    <span id="current-model-label">Faculty Mentor Online</span>
                 </div>
             </div>
         </header>
@@ -1584,23 +1616,23 @@
                     <div class="message-row assistant">
                         <div class="msg-avatar tutor">PN</div>
                         <div class="message-bubble">
-                            <h3 style="margin-top:0;">Hello! I'm Professor Nova 🎓</h3>
-                            <p>I'm your personal learning mentor powered by <strong>Google Gemini 2.5</strong> and <strong>Retrieval-Augmented Generation (RAG)</strong>.</p>
-                            <p>Your course documents are actively indexed in the knowledge base. You can attach a new PDF anytime using the <strong>📎 paperclip icon</strong> below, or click any starter question to begin:</p>
+                            <h3 style="margin-top:0;">Welcome to Office Hours! ☕</h3>
+                            <p>I'm Professor Nova. Whether you're wrestling with today's lecture slides, trying to understand a tricky formula, or prepping for your upcoming exams, think of this room as your dedicated 1-on-1 academic study session.</p>
+                            <p>I have direct access to your course library and lecture notes. Feel free to ask a doubt in plain English, attach your assignment or notes with the <strong>📎 paperclip icon</strong>, or click one of these questions to jump right in:</p>
                             
                             <div class="follow-ups-container">
-                                <div class="follow-up-title">Recommended Starter Questions:</div>
-                                <div class="follow-up-pill" onclick="sendQuickPrompt('What is the system design of an AI Teaching Assistant according to the uploaded PDF?')">
-                                    📄 What is the system design of an AI Teaching Assistant according to the uploaded PDF?
+                                <div class="follow-up-title">Popular Study Inquiries:</div>
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('Can you walk me through the system design of an AI Teaching Assistant from our course PDF?')">
+                                    📖 Walk me through the system design of an AI Teaching Assistant from our course PDF
                                 </div>
-                                <div class="follow-up-pill" onclick="sendQuickPrompt('How does the RAG pipeline work with FAISS and pgvector in the course notes?')">
-                                    ⚙️ How does the RAG pipeline work with FAISS and pgvector in the course notes?
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('How do vector stores and similarity search work in simple terms?')">
+                                    💡 How do vector stores and similarity search work in simple terms?
                                 </div>
-                                <div class="follow-up-pill" onclick="sendQuickPrompt('Explain the document loading, splitting, and retrieval steps in LangChain')">
-                                    🧩 Explain the document loading, splitting, and retrieval steps in LangChain
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('What are the top 3 high-yield exam questions from our uploaded course notes?')">
+                                    🎯 What are the top 3 high-yield exam questions from our uploaded course notes?
                                 </div>
                                 <div class="follow-up-pill" onclick="document.getElementById('chat-file-input').click()">
-                                    📎 Attach another course PDF, slides, or lecture notes
+                                    📎 Upload another lecture slide, syllabus, or handwritten note
                                 </div>
                             </div>
                         </div>
@@ -1828,9 +1860,14 @@
                     <div style="font-size:3.8rem; font-weight:800; font-family:var(--font-heading); color:var(--accent-primary);" id="quiz-final-score">80%</div>
                     <h3 style="font-family:var(--font-heading); font-size:1.55rem; color:var(--text-title);" id="quiz-score-title">Great Work!</h3>
                     <p style="color:var(--text-muted); margin:8px 0 20px 0;" id="quiz-score-subtext">You answered 4 out of 5 questions correctly.</p>
-                    <button class="btn-primary" onclick="generateQuiz()">
-                        <span>Take Another Practice Quiz</span>
-                    </button>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+                        <button class="btn-primary" onclick="generateQuiz()">
+                            <span>Take Another Practice Drill</span>
+                        </button>
+                        <button class="btn-primary" onclick="askProfessorAboutQuiz()" style="background:linear-gradient(135deg, #0f766e, #115e59);">
+                            <span>💬 Review Doubts in Office Hours</span>
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -1841,17 +1878,20 @@
                         <div class="card-icon" style="font-size:1.4rem;">💡</div>
                         <div>
                             <h3 style="font-family:var(--font-heading); font-size:1.24rem; font-weight:700; color:var(--text-title);">Executive Study Guide & 3D Flashcards</h3>
-                            <p style="font-size:0.84rem; color:var(--text-muted); margin-top:2px;">Generate high-yield revision summaries and spaced-repetition flashcards from your course notes.</p>
+                            <p style="font-size:0.84rem; color:var(--text-muted); margin-top:2px;">Generate high-yield revision summaries, printable cheat sheets, and spaced-repetition flashcards from your course notes.</p>
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+                    <div style="display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap;">
                         <div class="form-group" style="flex:1; min-width:240px;">
                             <label>Select Focus Topic or Chapter (Optional)</label>
-                            <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. All materials or System Architecture">
+                            <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. All materials, System Architecture, or Backpropagation">
                         </div>
-                        <button class="btn-start-quiz" onclick="generateSummary()" id="btn-gen-summary" style="width:auto; padding:12px 28px;">
+                        <button class="btn-start-quiz" onclick="generateSummary()" id="btn-gen-summary" style="width:auto; padding:12px 24px;">
                             <span>⚡ Generate Study Guide</span>
+                        </button>
+                        <button class="btn-start-quiz" onclick="generateCheatSheet()" id="btn-cheat-sheet" style="width:auto; padding:12px 24px; background:linear-gradient(135deg, #0f766e, #115e59);">
+                            <span>📑 1-Page Exam Cheat Sheet</span>
                         </button>
                     </div>
                 </div>
@@ -1955,48 +1995,6 @@
                 </div>
             </section>
 
-            <!-- ================= VIEW 6: SETTINGS ================= -->
-            <section id="view-settings" class="view-panel settings-view">
-                <div class="card-panel">
-                    <h3 style="font-family:var(--font-heading); font-size:1.25rem; color:var(--text-title);">Google Gemini AI Configuration</h3>
-                    <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6;">
-                        Configure your Google Gemini API key to enable live neural explanations, PDF citations, OCR extraction, and interactive quizzes.
-                    </p>
-
-                    <div class="form-group">
-                        <label>Google Gemini API Key</label>
-                        <input type="password" id="settings-api-key" class="form-control-input" placeholder="AQ.Ab8RN...">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Active Gemini Model</label>
-                        <select id="settings-model" class="form-control-input">
-                            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Fastest & Recommended)</option>
-                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Analytical Reasoning)</option>
-                            <option value="gemini-3.8-flash">Gemini 3.8 Flash (Cutting-edge)</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-primary" onclick="saveSettings()">
-                            <span>Save Configuration</span>
-                        </button>
-                    </div>
-                    <div id="settings-status-msg" style="font-size:0.86rem; display:none;"></div>
-                </div>
-
-                <div class="card-panel">
-                    <h3 style="font-family:var(--font-heading); font-size:1.25rem; color:var(--text-title);">Voice & Speech Settings</h3>
-                    <div style="display:flex; align-items:center; justify-content:space-between;">
-                        <div>
-                            <div style="font-weight:600; font-size:0.92rem; color:var(--text-title);">Auto-Read AI Answers Aloud</div>
-                            <div style="font-size:0.8rem; color:var(--text-subtle);">Automatically read tutor responses aloud using browser speech synthesis</div>
-                        </div>
-                        <input type="checkbox" id="setting-auto-speech" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent-primary);">
-                    </div>
-                </div>
-            </section>
-
         </div>
     </main>
 
@@ -2013,14 +2011,13 @@
         let isGenerating = false;
         let currentAttachedFile = null;
 
-        // View Titles
+        // View Titles (Humanized Academic Experience)
         const viewMeta = {
-            chat: { title: "Tutor Chat & Doubts", subtitle: "Ask questions from your course lecture notes, slides, and PDFs" },
-            materials: { title: "Course Materials & Ingestion Hub", subtitle: "Upload PDFs, lecture slides, notes, or YouTube lectures" },
-            quiz: { title: "Practice Quiz & Exam Prep", subtitle: "Test your mastery with instant AI-generated practice exams" },
-            summary: { title: "Study Guide & 3D Flashcards", subtitle: "High-yield revision notes and spaced-repetition flashcards" },
-            analytics: { title: "Learning Progress & Analytics", subtitle: "Track student progress, accuracy, and review past doubts" },
-            settings: { title: "Settings & AI Configuration", subtitle: "Manage your Google Gemini API key and active model" }
+            chat: { title: "Faculty Office Hours & Doubts", subtitle: "1-on-1 personal mentorship, concept breakdowns, and doubt resolution" },
+            materials: { title: "Course Library & Lecture Repository", subtitle: "Indexed slides, lecture notes, textbook chapters, and video lectures" },
+            quiz: { title: "Exam Practice & Knowledge Drills", subtitle: "Test your mastery with instant evaluation and detailed professor feedback" },
+            summary: { title: "Study Guides, Cheat Sheets & Flashcards", subtitle: "High-yield revision sheets, 1-page printable cheat sheets, and flashcards" },
+            analytics: { title: "Academic Progress & Mastery Dashboard", subtitle: "Track retention metrics, drill accuracy, and past doubts discussed" }
         };
 
         // Mobile Sidebar Controls
@@ -2048,9 +2045,9 @@
             const panel = document.getElementById(`view-${viewId}`);
             if (panel) panel.classList.add('active');
 
-            const navIndex = ['chat', 'materials', 'quiz', 'summary', 'analytics', 'settings'].indexOf(viewId);
+            const navIndex = ['chat', 'materials', 'quiz', 'summary', 'analytics'].indexOf(viewId);
             const navItems = document.querySelectorAll('.nav-item');
-            if (navItems[navIndex]) navItems[navIndex].classList.add('active');
+            if (navIndex !== -1 && navItems[navIndex]) navItems[navIndex].classList.add('active');
 
             if (viewMeta[viewId]) {
                 document.getElementById('top-title').textContent = viewMeta[viewId].title;
@@ -2110,15 +2107,49 @@
             if (btn) btn.classList.remove('recording');
         }
 
-        // Text-to-Speech Output
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const clean = text.replace(/[*_#`\[\]]/g, '');
-                const utterance = new SpeechSynthesisUtterance(clean);
-                utterance.rate = 1.0;
-                window.speechSynthesis.speak(utterance);
+        // Text-to-Speech Output with Play / Pause / Stop Toggle
+        let currentSpeakingBtnId = null;
+        function toggleSpeakText(text, btnId) {
+            if (!('speechSynthesis' in window)) {
+                alert("Audio playback is not supported on this browser.");
+                return;
             }
+            const btn = document.getElementById(btnId);
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                if (currentSpeakingBtnId) {
+                    const prev = document.getElementById(currentSpeakingBtnId);
+                    if (prev) prev.innerHTML = '🔊 Listen to Professor';
+                }
+                if (currentSpeakingBtnId === btnId) {
+                    currentSpeakingBtnId = null;
+                    return;
+                }
+            }
+
+            const clean = text.replace(/[*_#`\[\]]/g, '').replace(/https?:\/\/\S+/g, '');
+            const utterance = new SpeechSynthesisUtterance(clean);
+            utterance.rate = 0.96;
+            utterance.pitch = 1.0;
+
+            utterance.onstart = () => {
+                if (btn) btn.innerHTML = '⏹️ Stop Listening';
+                currentSpeakingBtnId = btnId;
+            };
+            utterance.onend = () => {
+                if (btn) btn.innerHTML = '🔊 Listen to Professor';
+                currentSpeakingBtnId = null;
+            };
+            utterance.onerror = () => {
+                if (btn) btn.innerHTML = '🔊 Listen to Professor';
+                currentSpeakingBtnId = null;
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakText(text) {
+            toggleSpeakText(text, null);
         }
 
         // Chat Input handling
@@ -2306,7 +2337,7 @@
             if (followUps && followUps.length > 0) {
                 followUpsHtml = `
                     <div class="follow-ups-container">
-                        <div class="follow-up-title">Recommended Follow-ups:</div>
+                        <div class="follow-up-title">Recommended Inquiries:</div>
                         ${followUps.map(q => `
                             <div class="follow-up-pill" onclick="sendQuickPrompt('${escapeHtml(q)}')">
                                 <span>💡</span>
@@ -2318,15 +2349,26 @@
             }
 
             const messageId = 'msg-' + Date.now();
+            const lensesHtml = `
+                <div class="pedagogical-lenses">
+                    <span class="lens-label">Deepen Understanding:</span>
+                    <button class="lens-pill" onclick="sendQuickPrompt('Explain this concept in plain English as if I am 5 years old, using a warm everyday analogy.')">🍼 Explain Simpler (ELI5)</button>
+                    <button class="lens-pill" onclick="sendQuickPrompt('Give me a realistic industrial or real-world engineering case study where this concept is applied in production.')">🌍 Real-World Analogy</button>
+                    <button class="lens-pill" onclick="sendQuickPrompt('What are the top tricky exam questions and grading rubric pitfalls on this concept?')">⚡ Exam Trap Drill</button>
+                    <button class="lens-pill" onclick="sendQuickPrompt('Ask me a challenging Socratic question to test my understanding of what you just explained.')">❓ Test My Understanding</button>
+                </div>
+            `;
+
             row.innerHTML = `
                 <div class="msg-avatar tutor">PN</div>
                 <div class="message-bubble">
                     <div id="${messageId}">${parsedHtml}</div>
                     ${sourcesHtml}
                     ${followUpsHtml}
+                    ${lensesHtml}
                     <div class="bubble-actions">
-                        <button class="btn-action-mini" onclick="speakText(document.getElementById('${messageId}').innerText)">🔊 Listen</button>
-                        <button class="btn-action-mini" onclick="navigator.clipboard.writeText(document.getElementById('${messageId}').innerText); alert('Copied to clipboard!')">📋 Copy</button>
+                        <button class="btn-action-mini" id="voice-btn-${messageId}" onclick="toggleSpeakText(document.getElementById('${messageId}').innerText, 'voice-btn-${messageId}')">🔊 Listen to Professor</button>
+                        <button class="btn-action-mini" onclick="navigator.clipboard.writeText(document.getElementById('${messageId}').innerText); alert('Copied professor note to clipboard!')">📋 Copy Note</button>
                     </div>
                 </div>
             `;
@@ -2610,25 +2652,42 @@
         }
 
         function selectQuizAnswer(selectedIndex, correctIndex, explanation) {
+            let targetIdx = correctIndex;
+            if (typeof targetIdx === 'string') {
+                targetIdx = targetIdx.trim().toUpperCase();
+                if (targetIdx === 'A') targetIdx = 0;
+                else if (targetIdx === 'B') targetIdx = 1;
+                else if (targetIdx === 'C') targetIdx = 2;
+                else if (targetIdx === 'D') targetIdx = 3;
+                else targetIdx = parseInt(targetIdx, 10);
+            }
+            if (isNaN(targetIdx)) targetIdx = 0;
+
             const options = document.querySelectorAll('.quiz-option-btn');
             options.forEach((btn, idx) => {
                 btn.disabled = true;
-                if (idx === correctIndex) btn.classList.add('correct');
-                if (idx === selectedIndex && idx !== correctIndex) btn.classList.add('incorrect');
+                if (idx === targetIdx) {
+                    btn.classList.add('correct');
+                    btn.innerHTML += ` <span style="margin-left:auto; font-weight:700; color:#047857;">✓ Correct</span>`;
+                }
+                if (idx === selectedIndex && idx !== targetIdx) {
+                    btn.classList.add('incorrect');
+                    btn.innerHTML += ` <span style="margin-left:auto; font-weight:700; color:#b91c1c;">✗ Selected</span>`;
+                }
             });
 
-            if (selectedIndex === correctIndex) {
+            if (selectedIndex === targetIdx) {
                 currentQuizScore++;
             }
 
             const expBox = document.getElementById('quiz-explanation-box');
-            expBox.innerHTML = `<strong>Explanation:</strong> ${escapeHtml(explanation)}`;
+            expBox.innerHTML = `<strong>💡 Professor's Insight:</strong> ${escapeHtml(explanation || "This is the foundational solution derived from the course material.")}`;
             expBox.style.display = 'block';
 
             const nextBtn = document.getElementById('quiz-next-btn');
             nextBtn.style.display = 'flex';
             if (currentQuizIndex === activeQuizQuestions.length - 1) {
-                nextBtn.innerHTML = `<span>Finish Quiz & See Results 🎉</span>`;
+                nextBtn.innerHTML = `<span>Finish Drill & See Academic Evaluation 🎉</span>`;
             } else {
                 nextBtn.innerHTML = `<span>Next Question →</span>`;
             }
@@ -2639,7 +2698,7 @@
                 currentQuizIndex++;
                 renderQuizQuestion();
             } else {
-                // Show final scorecard
+                // Show final scorecard with human grading
                 document.getElementById('quiz-active-container').style.display = 'none';
                 const results = document.getElementById('quiz-results-container');
                 results.style.display = 'flex';
@@ -2647,7 +2706,17 @@
                 const total = activeQuizQuestions.length;
                 const pct = Math.round((currentQuizScore / total) * 100);
                 document.getElementById('quiz-final-score').textContent = `${pct}%`;
-                document.getElementById('quiz-score-subtext').textContent = `You answered ${currentQuizScore} out of ${total} questions correctly.`;
+
+                if (pct >= 80) {
+                    document.getElementById('quiz-score-title').textContent = "🌟 Outstanding Academic Mastery!";
+                    document.getElementById('quiz-score-subtext').textContent = `You aced ${currentQuizScore} out of ${total} questions. You're in prime exam shape!`;
+                } else if (pct >= 60) {
+                    document.getElementById('quiz-score-title').textContent = "👍 Solid Conceptual Foundation";
+                    document.getElementById('quiz-score-subtext').textContent = `You answered ${currentQuizScore} out of ${total} correctly. A quick review will solidify this topic.`;
+                } else {
+                    document.getElementById('quiz-score-title').textContent = "📚 Room for Growth";
+                    document.getElementById('quiz-score-subtext').textContent = `You scored ${currentQuizScore} out of ${total}. Bring these doubts to office hours and let's review them together!`;
+                }
 
                 // Confetti if score >= 70%
                 if (pct >= 70 && typeof confetti === 'function') {
@@ -2664,6 +2733,53 @@
                         topic: document.getElementById('quiz-topic').value || 'Course Review'
                     })
                 });
+            }
+        }
+
+        function askProfessorAboutQuiz() {
+            const topic = document.getElementById('quiz-topic').value.trim() || 'the recent practice exam questions';
+            switchView('chat');
+            sendQuickPrompt(`Professor Nova, I just completed a practice exam drill on '${topic}' and want to review the key concepts and common pitfalls. Could you summarize the core principles I should focus on?`);
+        }
+
+        async function generateCheatSheet() {
+            const topic = document.getElementById('summary-topic').value.trim() || 'Core Course Syllabus';
+            const btn = document.getElementById('btn-cheat-sheet');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Compiling Cheat Sheet...`;
+            try {
+                const resp = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: `As an academic professor, compile a high-yield, 1-Page Exam Cheat Sheet for '${topic}' based on all indexed lecture notes.
+Format strictly in clean Markdown with:
+# 📑 1-Page Exam Cheat Sheet: ${topic}
+## 📌 Core Definitions & Keyword Bank (Concise bullet points)
+## 📐 Essential Formulas, Algorithms & Architecture Steps
+## ⚠️ Top 5 Tricky Exam Traps & Common Misconceptions to Avoid
+## 💡 Quick Memory Mnemonics`
+                    })
+                });
+                const data = await resp.json();
+                document.getElementById('summary-display-area').style.display = 'flex';
+                const el = document.getElementById('summary-markdown-content');
+                el.innerHTML = `
+                    <div style="background:rgba(15, 118, 110, 0.08); border:1px solid rgba(15, 118, 110, 0.25); border-radius:12px; padding:14px 18px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <strong style="color:var(--accent-secondary); font-size:1.05rem;">📑 High-Yield 1-Page Exam Cheat Sheet: ${escapeHtml(topic)}</strong>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Compiled directly from your course materials for last-minute revision.</div>
+                        </div>
+                        <button class="btn-action-mini" onclick="window.print()" style="background:#ffffff; border-color:var(--accent-secondary); color:var(--accent-secondary); font-weight:600;">🖨️ Print / Save PDF</button>
+                    </div>
+                    ${marked.parse(data.answer || "Cheat sheet generated.")}
+                `;
+                el.scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                alert('Failed to generate cheat sheet: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>📑 1-Page Exam Cheat Sheet</span>`;
             }
         }
 

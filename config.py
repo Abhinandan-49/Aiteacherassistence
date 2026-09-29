@@ -12,11 +12,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Config:
     # Google Gemini Settings
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-    DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+    DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-flash-lite-latest')
     AVAILABLE_MODELS = [
+        'gemini-flash-lite-latest',
+        'gemini-flash-latest',
         'gemini-2.5-flash',
-        'gemini-2.5-pro',
-        'gemini-3.8-flash'
+        'gemini-2.5-pro'
     ]
     EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'gemini-embedding-2')
     
