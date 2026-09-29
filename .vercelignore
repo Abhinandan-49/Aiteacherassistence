@@ -1,0 +1,15 @@
+.venv
+venv
+ENV
+env
+__pycache__
+*.pyc
+uploads/
+vector_store_data/
+analytics_data/
+.git
+.env
+.env.local
+.vscode
+.idea
+*.log

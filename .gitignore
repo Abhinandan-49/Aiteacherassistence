@@ -70,3 +70,5 @@ instance/
 # Temporary files
 *.tmp
 temp/
+.vercel
+.env*
