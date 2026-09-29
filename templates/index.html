@@ -1831,13 +1831,13 @@
         </ul>
 
         <!-- Personal Student Profile Dock -->
-        <div class="student-profile-dock" id="student-profile-dock" onclick="openAuthModal('profile')" title="View or edit personalized learning settings">
-            <div class="student-profile-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="student-profile-dock" id="student-profile-dock" onclick="openAuthModal()" title="Sign in with Google to personalize learning">
+            <div class="student-profile-avatar" id="sidebar-user-avatar">👤</div>
             <div class="student-profile-details">
-                <div class="student-profile-name" id="sidebar-user-name">Abhinandan Dubey</div>
-                <div class="student-profile-major" id="sidebar-user-major">💻 Computer Science</div>
+                <div class="student-profile-name" id="sidebar-user-name">Guest Student</div>
+                <div class="student-profile-major" id="sidebar-user-major">Sign in with Google</div>
             </div>
-            <div class="student-profile-gear">⚙️</div>
+            <div class="student-profile-gear">🔑</div>
         </div>
 
         <div class="sidebar-footer">
@@ -1863,21 +1863,13 @@
             </div>
 
             <div class="header-status-group" style="display:flex; align-items:center; gap:8px;">
-                <div class="chip-ai-model" id="history-saved-badge" style="font-size:0.78rem; color:var(--accent-secondary); background:rgba(15, 118, 110, 0.08); border:1px solid rgba(15, 118, 110, 0.2);">
-                    <span>💾</span>
-                    <span id="save-status-text">History Saved</span>
-                </div>
                 <button class="btn-action-mini" id="clear-chat-btn" onclick="confirmClearChat()" title="Start a fresh study session" style="display:none; padding:4px 10px; font-size:0.78rem; background:rgba(255, 255, 255, 0.7); border:1px solid var(--border-warm);">
                     🧹 Clear Chat
                 </button>
-                <button class="btn-action-mini" id="btn-user-account" onclick="openAuthModal('profile')" title="Personalized Academic Profile" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; font-size:0.8rem; background:var(--accent-light); border:1px solid rgba(180, 83, 9, 0.25); color:var(--accent-tag); font-weight:600; border-radius:var(--radius-sm);">
-                    <span id="top-user-avatar-tag">👤</span>
-                    <span id="top-user-name-tag">Abhinandan</span>
+                <button class="btn-action-mini" id="btn-user-account" onclick="openAuthModal()" title="Student Account & Sign In" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; font-size:0.8rem; background:var(--accent-light); border:1px solid rgba(180, 83, 9, 0.25); color:var(--accent-tag); font-weight:600; border-radius:var(--radius-sm);">
+                    <span id="top-user-avatar-tag">🔑</span>
+                    <span id="top-user-name-tag">Sign In</span>
                 </button>
-                <div class="chip-ai-model">
-                    <span style="font-size:0.95rem;">🎓</span>
-                    <span id="current-model-label">Faculty Mentor Online</span>
-                </div>
             </div>
         </header>
 
@@ -3406,8 +3398,9 @@ Format strictly in clean Markdown with:
                 const modelLabel = document.getElementById('current-model-label');
 
                 if (data.active_model) {
-                    modelLabel.textContent = data.active_model;
-                    document.getElementById('settings-model').value = data.active_model;
+                    if (modelLabel) modelLabel.textContent = data.active_model;
+                    const setModel = document.getElementById('settings-model');
+                    if (setModel) setModel.value = data.active_model;
                 }
 
                 if (data.api_key_configured) {
@@ -3420,7 +3413,8 @@ Format strictly in clean Markdown with:
                     text.textContent = 'API Key Needed (Settings)';
                 }
 
-                document.getElementById('badge-materials').textContent = `${data.total_documents || 1} Docs`;
+                const docBadge = document.getElementById('badge-materials');
+                if (docBadge) docBadge.textContent = `${data.total_documents || 1} Docs`;
             } catch (e) {
                 console.error("Health check failed", e);
             }
@@ -3439,25 +3433,56 @@ Format strictly in clean Markdown with:
                 const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 if (saved) {
                     currentUser = JSON.parse(saved);
+                    applyUserProfile(currentUser);
                 } else {
-                    // Fetch default Abhinandan profile
-                    const resp = await fetch('/api/auth/profile');
-                    const data = await resp.json();
-                    if (data.success && data.user) {
-                        currentUser = data.user;
-                        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-                    }
+                    currentUser = null;
+                    applyGuestProfile();
                 }
-                applyUserProfile(currentUser);
             } catch (e) {
                 console.error("Failed to init user session:", e);
+                currentUser = null;
+                applyGuestProfile();
             }
         }
 
+        function applyGuestProfile() {
+            currentUser = null;
+
+            // Sidebar dock
+            const avatarEl = document.getElementById('sidebar-user-avatar');
+            const nameEl = document.getElementById('sidebar-user-name');
+            const majorEl = document.getElementById('sidebar-user-major');
+            if (avatarEl) avatarEl.textContent = '👤';
+            if (nameEl) nameEl.textContent = 'Guest Student';
+            if (majorEl) majorEl.textContent = 'Sign in with Google';
+
+            // Top header button
+            const topAvatar = document.getElementById('top-user-avatar-tag');
+            const topTag = document.getElementById('top-user-name-tag');
+            if (topAvatar) topAvatar.textContent = '🔑';
+            if (topTag) topTag.textContent = 'Sign In';
+
+            // Modal profile fields
+            const mAvatar = document.getElementById('modal-user-avatar');
+            const mName = document.getElementById('modal-user-name');
+            const mEmail = document.getElementById('modal-user-email');
+            if (mAvatar) mAvatar.textContent = '👤';
+            if (mName) mName.textContent = 'Guest Student';
+            if (mEmail) mEmail.textContent = 'Not signed in';
+
+            const pName = document.getElementById('prof-name');
+            const pMajor = document.getElementById('prof-major');
+            if (pName) pName.value = '';
+            if (pMajor) pMajor.value = '';
+        }
+
         function applyUserProfile(user) {
-            if (!user) return;
-            const name = user.name || 'Abhinandan Dubey';
-            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'AD';
+            if (!user) {
+                applyGuestProfile();
+                return;
+            }
+            const name = user.name || 'Guest Student';
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'GS';
             const major = user.major || 'Computer Science';
 
             // Sidebar dock
@@ -3475,7 +3500,15 @@ Format strictly in clean Markdown with:
             if (majorEl) majorEl.textContent = `💻 ${major}`;
 
             // Top header button
+            const topAvatar = document.getElementById('top-user-avatar-tag');
             const topTag = document.getElementById('top-user-name-tag');
+            if (topAvatar) {
+                if (user.avatar_url) {
+                    topAvatar.innerHTML = `<img src="${user.avatar_url}" alt="${name}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle;" referrerpolicy="no-referrer">`;
+                } else {
+                    topAvatar.textContent = '👤';
+                }
+            }
             if (topTag) topTag.textContent = name.split(' ')[0];
 
             // Modal profile fields
@@ -3507,11 +3540,36 @@ Format strictly in clean Markdown with:
 
         function openAuthModal(tab = null) {
             const modal = document.getElementById('auth-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-                const targetTab = tab || (currentUser ? 'profile' : 'signin');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            clearAuthAlert();
+
+            const navTabs = document.querySelector('.modal-nav-tabs');
+            const modalTitle = document.getElementById('auth-modal-title');
+            const modalSubtitle = document.getElementById('auth-modal-subtitle');
+
+            if (!currentUser) {
+                // GUEST: Only provide Google Authentication
+                if (navTabs) navTabs.style.display = 'none';
+                if (modalTitle) modalTitle.textContent = 'Sign in with Google';
+                if (modalSubtitle) modalSubtitle.textContent = 'Sign in with your Google account to personalize Professor Nova & save progress';
+
+                const paneSignin = document.getElementById('auth-pane-signin');
+                const paneProfile = document.getElementById('auth-pane-profile');
+                if (paneSignin) paneSignin.style.display = 'block';
+                if (paneProfile) paneProfile.style.display = 'none';
+
+                if (googleClientId && window.google && window.google.accounts && window.google.accounts.id) {
+                    setupGoogleIdentity();
+                }
+            } else {
+                // SIGNED IN: Show profile & personalization
+                if (navTabs) navTabs.style.display = 'flex';
+                if (modalTitle) modalTitle.textContent = 'Student Profile & Personalization';
+                if (modalSubtitle) modalSubtitle.textContent = "Customizes Professor Nova's explanations to your level & goals";
+
+                const targetTab = tab || 'profile';
                 switchAuthTab(targetTab);
-                clearAuthAlert();
             }
         }
 
@@ -3710,17 +3768,9 @@ Format strictly in clean Markdown with:
         function handleLogout() {
             if (confirm("Are you sure you want to sign out of your student account?")) {
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-                currentUser = null;
-                const avatarEl = document.getElementById('sidebar-user-avatar');
-                const nameEl = document.getElementById('sidebar-user-name');
-                const majorEl = document.getElementById('sidebar-user-major');
-                if (avatarEl) avatarEl.textContent = '👤';
-                if (nameEl) nameEl.textContent = 'Guest Student';
-                if (majorEl) majorEl.textContent = 'Sign in to personalize';
-                const topTag = document.getElementById('top-user-name-tag');
-                if (topTag) topTag.textContent = 'Sign In';
-                switchAuthTab('signin');
-                showAuthAlert("You have signed out. Sign in anytime to restore your personalized profile.");
+                applyGuestProfile();
+                openAuthModal();
+                showAuthAlert("You have signed out. Sign in with Google anytime to restore your personalized profile.");
             }
         }
 
@@ -3800,10 +3850,10 @@ Format strictly in clean Markdown with:
                 <div id="auth-pane-profile">
                     <div style="background:rgba(180, 83, 9, 0.06); border:1px solid rgba(180, 83, 9, 0.18); border-radius:12px; padding:12px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div class="student-profile-avatar" id="modal-user-avatar" style="width:40px; height:40px; font-size:1rem;">AD</div>
+                            <div class="student-profile-avatar" id="modal-user-avatar" style="width:40px; height:40px; font-size:1rem;">👤</div>
                             <div>
-                                <strong id="modal-user-name" style="font-size:0.95rem; color:var(--text-title);">Active Student</strong>
-                                <div id="modal-user-email" style="font-size:0.75rem; color:var(--text-muted);">student@university.edu</div>
+                                <strong id="modal-user-name" style="font-size:0.95rem; color:var(--text-title);">Guest Student</strong>
+                                <div id="modal-user-email" style="font-size:0.75rem; color:var(--text-muted);">Not signed in</div>
                             </div>
                         </div>
                         <button class="btn-action-mini" onclick="handleLogout()" style="padding:4px 10px; font-size:0.75rem; color:#b91c1c; border-color:rgba(185, 28, 28, 0.3);">Sign Out</button>
