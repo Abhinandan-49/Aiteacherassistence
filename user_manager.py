@@ -118,6 +118,57 @@ class UserManager:
 
         return None, "No account found with this email. Please sign up."
 
+    def authenticate_or_create_google_user(
+        self,
+        email: str,
+        name: str,
+        picture: Optional[str] = None,
+        google_sub: Optional[str] = None
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        """Log in or automatically provision a student account via Google OAuth"""
+        email = email.strip().lower()
+        name = name.strip() or "Student"
+
+        users = self._load_users()
+        # Find existing user by email
+        for user_id, u in users.items():
+            if u.get("email") == email:
+                if picture:
+                    u["avatar_url"] = picture
+                if google_sub:
+                    u["google_id"] = google_sub
+                u["auth_provider"] = "google"
+                u["last_login"] = datetime.now().isoformat()
+                self._save_users(users)
+                return self._sanitize_user(u), None
+
+        # Provision a new account for this Google user
+        user_id = "user_g_" + uuid.uuid4().hex[:10]
+        user_record = {
+            "id": user_id,
+            "email": email,
+            "name": name,
+            "password_hash": "",
+            "auth_provider": "google",
+            "avatar_url": picture or "",
+            "google_id": google_sub or "",
+            "major": "Computer Science & Engineering",
+            "academic_level": "Undergraduate",
+            "learning_style": "Intuitive Analogies & Practical Examples",
+            "goal": "Deep Conceptual Mastery & Course Success",
+            "created_at": datetime.now().isoformat(),
+            "last_login": datetime.now().isoformat()
+        }
+        users[user_id] = user_record
+        self._save_users(users)
+
+        # Isolated directory for this student
+        user_dir = self.get_user_data_dir(user_id)
+        os.makedirs(user_dir, exist_ok=True)
+
+        return self._sanitize_user(user_record), None
+
+
     def get_default_user(self) -> Optional[Dict[str, Any]]:
         """Retrieve the primary or first registered student profile"""
         users = self._load_users()

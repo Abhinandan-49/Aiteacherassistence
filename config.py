@@ -10,6 +10,9 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class Config:
+    # Google Authentication (OAuth 2.0)
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+
     # Google Gemini Settings
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
     DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-flash-lite-latest')

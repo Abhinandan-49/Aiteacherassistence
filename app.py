@@ -117,6 +117,77 @@ def auth_login():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/auth/config', methods=['GET'])
+def auth_config():
+    """Expose public authentication configuration (Google Client ID)"""
+    return jsonify({
+        'google_client_id': Config.GOOGLE_CLIENT_ID or '',
+        'google_auth_enabled': bool(Config.GOOGLE_CLIENT_ID)
+    })
+
+
+@app.route('/api/auth/google', methods=['POST'])
+def auth_google():
+    """Verify Google OAuth2 ID Token and authenticate student"""
+    try:
+        data = request.get_json() or {}
+        credential = data.get('credential')
+        if not credential:
+            return jsonify({'success': False, 'error': 'Missing Google authentication credential token.'}), 400
+
+        client_id = Config.GOOGLE_CLIENT_ID or None
+        id_info = None
+
+        # Method 1: Google oauth2 id_token verifier
+        try:
+            from google.oauth2 import id_token
+            from google.auth.transport import requests as google_requests
+            id_info = id_token.verify_oauth2_token(
+                credential,
+                google_requests.Request(),
+                client_id
+            )
+        except Exception as verify_err:
+            # Method 2: Fallback to Google TokenInfo REST API
+            try:
+                import requests as http_requests
+                tokeninfo_resp = http_requests.get(
+                    f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}",
+                    timeout=5
+                )
+                if tokeninfo_resp.status_code == 200:
+                    id_info = tokeninfo_resp.json()
+                else:
+                    return jsonify({'success': False, 'error': f'Google token verification error: {str(verify_err)}'}), 401
+            except Exception as http_err:
+                return jsonify({'success': False, 'error': f'Verification server unreachable: {str(http_err)}'}), 500
+
+        if not id_info or 'email' not in id_info:
+            return jsonify({'success': False, 'error': 'Invalid Google account payload received.'}), 401
+
+        email = id_info.get('email', '')
+        name = id_info.get('name') or id_info.get('given_name') or email.split('@')[0]
+        picture = id_info.get('picture', '')
+        google_sub = id_info.get('sub', '')
+
+        user, err = user_manager.authenticate_or_create_google_user(
+            email=email,
+            name=name,
+            picture=picture,
+            google_sub=google_sub
+        )
+        if err:
+            return jsonify({'success': False, 'error': err}), 400
+
+        return jsonify({
+            'success': True,
+            'user': user,
+            'message': f'Signed in successfully with Google as {user.get("name")}!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/auth/profile', methods=['GET', 'POST'])
 def auth_profile():
     """Get or update student personalization profile"""
