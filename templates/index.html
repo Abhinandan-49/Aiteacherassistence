@@ -3523,10 +3523,18 @@ Format strictly in clean Markdown with:
         }
 
         async function quickLoginDemo() {
-            document.getElementById('login-email').value = 'abhidubey2536@gmail.com';
-            document.getElementById('login-password').value = 'password123';
-            const fakeEvent = { preventDefault: () => {} };
-            await handleLogin(fakeEvent);
+            try {
+                const resp = await fetch('/api/auth/profile');
+                const data = await resp.json();
+                if (data.success && data.user) {
+                    document.getElementById('login-email').value = data.user.email;
+                    document.getElementById('login-password').value = 'password123';
+                    const fakeEvent = { preventDefault: () => {} };
+                    await handleLogin(fakeEvent);
+                }
+            } catch (err) {
+                console.warn(err);
+            }
         }
 
         async function handleRegister(e) {
@@ -3697,8 +3705,8 @@ Format strictly in clean Markdown with:
                         <div style="display:flex; align-items:center; gap:10px;">
                             <div class="student-profile-avatar" id="modal-user-avatar" style="width:40px; height:40px; font-size:1rem;">AD</div>
                             <div>
-                                <strong id="modal-user-name" style="font-size:0.95rem; color:var(--text-title);">Abhinandan Dubey</strong>
-                                <div id="modal-user-email" style="font-size:0.75rem; color:var(--text-muted);">abhidubey2536@gmail.com</div>
+                                <strong id="modal-user-name" style="font-size:0.95rem; color:var(--text-title);">Active Student</strong>
+                                <div id="modal-user-email" style="font-size:0.75rem; color:var(--text-muted);">student@university.edu</div>
                             </div>
                         </div>
                         <button class="btn-action-mini" onclick="handleLogout()" style="padding:4px 10px; font-size:0.75rem; color:#b91c1c; border-color:rgba(185, 28, 28, 0.3);">Sign Out</button>
@@ -3707,11 +3715,11 @@ Format strictly in clean Markdown with:
                     <form onsubmit="handleUpdateProfile(event)">
                         <div class="auth-form-group">
                             <label>Full Student Name</label>
-                            <input type="text" id="prof-name" placeholder="e.g. Abhinandan Dubey" required>
+                            <input type="text" id="prof-name" placeholder="Enter student name" required>
                         </div>
                         <div class="auth-form-group">
                             <label>Field of Study / Major</label>
-                            <input type="text" id="prof-major" placeholder="e.g. Computer Science & Engineering, Mechanical, etc." required>
+                            <input type="text" id="prof-major" placeholder="e.g. Computer Science, Mechanical, Physics, etc." required>
                         </div>
                         <div class="auth-form-group">
                             <label>Academic Standing / Year</label>
@@ -3748,7 +3756,7 @@ Format strictly in clean Markdown with:
                     <form onsubmit="handleLogin(event)">
                         <div class="auth-form-group">
                             <label>Email Address</label>
-                            <input type="email" id="login-email" placeholder="e.g. abhidubey2536@gmail.com" required>
+                            <input type="email" id="login-email" placeholder="student@university.edu" required>
                         </div>
                         <div class="auth-form-group">
                             <label>Password</label>
@@ -3760,7 +3768,7 @@ Format strictly in clean Markdown with:
                     </form>
                     <div style="margin-top:14px; text-align:center;">
                         <button type="button" class="btn-action-mini" onclick="quickLoginDemo()" style="width:100%; padding:9px 14px; font-size:0.84rem; background:rgba(255,255,255,0.8);">
-                            ⚡ Continue as Abhinandan Dubey (1-Click)
+                            ⚡ Quick Demo Sign-In (1-Click)
                         </button>
                     </div>
                 </div>
@@ -3770,7 +3778,7 @@ Format strictly in clean Markdown with:
                     <form onsubmit="handleRegister(event)">
                         <div class="auth-form-group">
                             <label>Full Name</label>
-                            <input type="text" id="reg-name" placeholder="e.g. Abhinandan Dubey" required>
+                            <input type="text" id="reg-name" placeholder="Enter your full name" required>
                         </div>
                         <div class="auth-form-group">
                             <label>Email Address</label>

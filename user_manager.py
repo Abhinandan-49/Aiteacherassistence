@@ -28,7 +28,7 @@ class UserManager:
             default_id = "user_" + uuid.uuid4().hex[:8]
             default_users[default_id] = {
                 "id": default_id,
-                "email": "abhidubey2536@gmail.com",
+                "email": "student@university.edu",
                 "name": "Abhinandan Dubey",
                 "password_hash": generate_password_hash("password123"),
                 "major": "Computer Science & Engineering",
@@ -117,6 +117,14 @@ class UserManager:
                     return None, "Invalid password. Please check your credentials."
 
         return None, "No account found with this email. Please sign up."
+
+    def get_default_user(self) -> Optional[Dict[str, Any]]:
+        """Retrieve the primary or first registered student profile"""
+        users = self._load_users()
+        if users:
+            first_user = next(iter(users.values()))
+            return self._sanitize_user(first_user)
+        return None
 
     def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve user profile by ID"""
