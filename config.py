@@ -12,13 +12,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Config:
     # Google Gemini Settings
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-    DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
+    DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
     AVAILABLE_MODELS = [
-        'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-pro'
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-3.8-flash'
     ]
-    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'models/text-embedding-004')
+    EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'gemini-embedding-2')
     
     # Text Splitting Settings
     CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', 800))
