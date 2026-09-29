@@ -3728,6 +3728,7 @@ Format strictly in clean Markdown with:
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
                     applyUserProfile(currentUser);
                     showAuthAlert(`🎉 Signed in as ${currentUser.name}!`);
+                    loadFirestoreHistoryForUser(currentUser.id);
                     setTimeout(() => { closeAuthModal(); }, 800);
                 } else {
                     showAuthAlert(`❌ ${data.error || 'Google Sign-In failed.'}`, true);
@@ -3777,9 +3778,46 @@ Format strictly in clean Markdown with:
         function handleLogout() {
             if (confirm("Are you sure you want to sign out of your student account?")) {
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                const cloudBanner = document.getElementById('cloud-past-history-banner');
+                if (cloudBanner) cloudBanner.remove();
                 applyGuestProfile();
                 openAuthModal();
                 showAuthAlert("You have signed out. Sign in with Google anytime to restore your personalized profile.");
+            }
+        }
+
+        async function loadFirestoreHistoryForUser(userId) {
+            if (!userId) return;
+            try {
+                const resp = await fetch(`/api/chat/history?user_id=${encodeURIComponent(userId)}`);
+                const data = await resp.json();
+                if (data.success && Array.isArray(data.history) && data.history.length > 0) {
+                    const container = document.getElementById('chat-messages');
+                    if (document.getElementById('cloud-past-history-banner')) return;
+
+                    const pastCard = document.createElement('div');
+                    pastCard.id = 'cloud-past-history-banner';
+                    pastCard.className = 'message-row assistant';
+                    pastCard.style.marginTop = '15px';
+                    pastCard.innerHTML = `
+                        <div class="msg-avatar tutor">PN</div>
+                        <div class="message-bubble" style="background:rgba(255, 255, 255, 0.95); border:1px solid var(--border-warm);">
+                            <h4 style="margin-top:0; color:var(--accent-primary);">☁️ Cloud History Loaded (Firestore)</h4>
+                            <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">Welcome back! You have <strong>${data.history.length}</strong> previous doubt discussions saved in your Cloud Firestore account. Click any past question to continue exploring:</p>
+                            <div class="follow-ups-container">
+                                ${data.history.slice(-5).reverse().map(h => `
+                                    <div class="follow-up-pill" onclick="sendQuickPrompt('${escapeHtml(h.question)}')">
+                                        <span>💬</span>
+                                        <span>${escapeHtml(h.question)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(pastCard);
+                }
+            } catch (e) {
+                console.warn("Could not load Firestore history:", e);
             }
         }
 
@@ -3792,14 +3830,19 @@ Format strictly in clean Markdown with:
             await initUserSession();
             await initGoogleAuth();
 
+            // If logged in with Google, fetch Firestore history
+            if (currentUser && currentUser.id) {
+                loadFirestoreHistoryForUser(currentUser.id);
+            }
+
             // Restore persistent states across browser sessions
             const chatRestored = loadChatFromLocalStorage();
             loadQuizState();
             loadStudyGuideState();
             loadAnalytics();
 
-            // If local chat was empty, check server history for past doubts to offer instant resumption
-            if (!chatRestored) {
+            // If local chat was empty and no user, check server history for past doubts
+            if (!chatRestored && (!currentUser || !currentUser.id)) {
                 try {
                     const resp = await fetch('/api/history');
                     const data = await resp.json();

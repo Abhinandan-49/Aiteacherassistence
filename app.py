@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 from config import Config
 from teaching_assistant import AITeachingAssistant
 from user_manager import UserManager
+from firestore_manager import firestore_manager
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
@@ -185,9 +186,64 @@ def chat():
             student_profile = user_manager.get_user_by_id(user_id)
 
         response = ta.ask(question, chat_history=chat_history, student_profile=student_profile)
+
+        # Persist doubt Q&A to Cloud Firestore for this student
+        if user_id and response and response.get('answer'):
+            try:
+                firestore_manager.save_chat_message(
+                    user_id=user_id,
+                    question=question,
+                    answer=response.get('answer', ''),
+                    sources=response.get('sources', [])
+                )
+            except Exception as fe:
+                app.logger.warning(f"Failed to persist chat to Firestore: {fe}")
+
         return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/chat/history', methods=['GET'])
+def get_student_chat_history():
+    """Retrieve persistent doubt inquiry history from Cloud Firestore"""
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'history': []})
+    history = firestore_manager.get_chat_history(user_id)
+    return jsonify({'success': True, 'history': history})
+
+
+@app.route('/api/chat/clear', methods=['POST'])
+def clear_student_chat_history():
+    """Clear doubt inquiries in Cloud Firestore for student"""
+    data = request.get_json() or {}
+    user_id = data.get('user_id')
+    if user_id:
+        firestore_manager.clear_chat_history(user_id)
+    return jsonify({'success': True})
+
+
+@app.route('/api/quiz/save', methods=['POST'])
+def save_student_quiz():
+    """Persist student quiz performance to Cloud Firestore"""
+    data = request.get_json() or {}
+    user_id = data.get('user_id')
+    quiz_data = data.get('quiz', {})
+    if user_id and quiz_data:
+        firestore_manager.save_quiz_result(user_id, quiz_data)
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Missing user_id or quiz data'}), 400
+
+
+@app.route('/api/quiz/history', methods=['GET'])
+def get_student_quiz_history():
+    """Retrieve completed quizzes for student from Cloud Firestore"""
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'quizzes': []})
+    quizzes = firestore_manager.get_quiz_history(user_id)
+    return jsonify({'success': True, 'quizzes': quizzes})
 
 
 @app.route('/api/upload-files', methods=['POST'])

@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
+from firestore_manager import firestore_manager
 
 
 class UserManager:
@@ -115,8 +116,21 @@ class UserManager:
         email = email.strip().lower()
         name = name.strip() or "Student"
 
+        # 1. Check Cloud Firestore if connected
+        if firestore_manager.is_connected:
+            fs_user = firestore_manager.get_user_by_email(email)
+            if fs_user:
+                if picture:
+                    fs_user["avatar_url"] = picture
+                if google_sub:
+                    fs_user["google_id"] = google_sub
+                fs_user["auth_provider"] = "google"
+                fs_user["last_login"] = datetime.now().isoformat()
+                firestore_manager.save_user(fs_user)
+                return self._sanitize_user(fs_user), None
+
+        # 2. Check local users
         users = self._load_users()
-        # Find existing user by email
         for user_id, u in users.items():
             if u.get("email") == email:
                 if picture:
@@ -126,10 +140,12 @@ class UserManager:
                 u["auth_provider"] = "google"
                 u["last_login"] = datetime.now().isoformat()
                 self._save_users(users)
+                if firestore_manager.is_connected:
+                    firestore_manager.save_user(u)
                 return self._sanitize_user(u), None
 
         # Provision a new account for this Google user
-        user_id = "user_g_" + uuid.uuid4().hex[:10]
+        user_id = "user_g_" + (google_sub[-10:] if google_sub and len(google_sub) >= 10 else uuid.uuid4().hex[:10])
         user_record = {
             "id": user_id,
             "email": email,
@@ -145,15 +161,16 @@ class UserManager:
             "created_at": datetime.now().isoformat(),
             "last_login": datetime.now().isoformat()
         }
+
+        # Save to Cloud Firestore
+        if firestore_manager.is_connected:
+            firestore_manager.save_user(user_record)
+
+        # Save to local fallback
         users[user_id] = user_record
         self._save_users(users)
 
-        # Isolated directory for this student
-        user_dir = self.get_user_data_dir(user_id)
-        os.makedirs(user_dir, exist_ok=True)
-
         return self._sanitize_user(user_record), None
-
 
     def get_default_user(self) -> Optional[Dict[str, Any]]:
         """Retrieve the primary or first registered student profile"""
@@ -164,30 +181,50 @@ class UserManager:
         return None
 
     def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
-        """Retrieve user profile by ID"""
+        """Retrieve user profile by ID from Firestore or local fallback"""
+        if not user_id:
+            return None
+
+        # Check Firestore first
+        if firestore_manager.is_connected:
+            fs_user = firestore_manager.get_user_by_id(user_id)
+            if fs_user:
+                return self._sanitize_user(fs_user)
+
         users = self._load_users()
         if user_id in users:
             return self._sanitize_user(users[user_id])
         return None
 
     def update_profile(self, user_id: str, updates: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        """Update student personalization details"""
+        """Update student personalization details in Firestore and local fallback"""
+        if not user_id:
+            return None, "User ID required."
+
+        updated_user = None
+
+        # Update in Firestore
+        if firestore_manager.is_connected:
+            fs_updated, err = firestore_manager.update_user_profile(user_id, updates)
+            if fs_updated:
+                updated_user = fs_updated
+
+        # Also update local fallback
         users = self._load_users()
-        if user_id not in users:
-            return None, "User not found."
+        if user_id in users:
+            user = users[user_id]
+            allowed_fields = ["name", "major", "academic_level", "learning_style", "goal"]
+            for field in allowed_fields:
+                if field in updates and updates[field]:
+                    user[field] = str(updates[field]).strip()
+            users[user_id] = user
+            self._save_users(users)
+            if not updated_user:
+                updated_user = user
 
-        user = users[user_id]
-        allowed_fields = ["name", "major", "academic_level", "learning_style", "goal"]
-        for field in allowed_fields:
-            if field in updates and updates[field]:
-                user[field] = str(updates[field]).strip()
-
-        if "password" in updates and len(updates["password"]) >= 4:
-            user["password_hash"] = generate_password_hash(updates["password"])
-
-        users[user_id] = user
-        self._save_users(users)
-        return self._sanitize_user(user), None
+        if updated_user:
+            return self._sanitize_user(updated_user), None
+        return None, "User not found."
 
     def get_user_data_dir(self, user_id: str) -> str:
         """Returns the isolated storage directory for a specific student"""

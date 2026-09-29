@@ -14,6 +14,11 @@ class Config:
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
     GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 
+    # Firebase Cloud Firestore Settings
+    FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', 'ai-teacher-assistance-4381d')
+    FIREBASE_SERVICE_ACCOUNT_JSON = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON', '')
+    FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', os.path.join(BASE_DIR, 'firebase-service-account.json'))
+
     # Google Gemini Settings
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
     DEFAULT_MODEL = os.getenv('GEMINI_MODEL', 'gemini-flash-lite-latest')

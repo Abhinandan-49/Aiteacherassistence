@@ -74,3 +74,5 @@ instance/
 temp/
 .vercel
 .env*
+*firebase*.json
+service-account*.json
