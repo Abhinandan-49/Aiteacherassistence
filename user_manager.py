@@ -23,21 +23,7 @@ class UserManager:
     def _ensure_storage(self):
         os.makedirs(self.data_dir, exist_ok=True)
         if not os.path.exists(self.users_file):
-            # Seed with a default student account for Abhinandan
             default_users = {}
-            default_id = "user_" + uuid.uuid4().hex[:8]
-            default_users[default_id] = {
-                "id": default_id,
-                "email": "student@university.edu",
-                "name": "Abhinandan Dubey",
-                "password_hash": generate_password_hash("password123"),
-                "major": "Computer Science & Engineering",
-                "academic_level": "Undergraduate (3rd Year)",
-                "learning_style": "Intuitive Analogies & Practical Examples",
-                "goal": "Semester Exam Prep & Deep Conceptual Mastery",
-                "created_at": datetime.now().isoformat(),
-                "last_login": datetime.now().isoformat()
-            }
             with open(self.users_file, 'w', encoding='utf-8') as f:
                 json.dump(default_users, f, indent=2)
 

@@ -150,8 +150,7 @@ def auth_profile():
             user_id = request.args.get('user_id')
             email = request.args.get('email')
             if not user_id and not email:
-                user = user_manager.get_default_user()
-                return jsonify({'success': True, 'user': user})
+                return jsonify({'success': True, 'user': None})
 
             user = user_manager.get_user_by_id(user_id) if user_id else None
             if not user:

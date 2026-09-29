@@ -3432,14 +3432,21 @@ Format strictly in clean Markdown with:
             try {
                 const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 if (saved) {
-                    currentUser = JSON.parse(saved);
-                    applyUserProfile(currentUser);
-                } else {
-                    currentUser = null;
-                    applyGuestProfile();
+                    const parsed = JSON.parse(saved);
+                    // Only honor active session if explicitly authenticated via Google
+                    if (parsed && parsed.auth_provider === 'google' && parsed.email) {
+                        currentUser = parsed;
+                        applyUserProfile(currentUser);
+                        return;
+                    }
                 }
+                // Default is always Guest
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                currentUser = null;
+                applyGuestProfile();
             } catch (e) {
                 console.error("Failed to init user session:", e);
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                 currentUser = null;
                 applyGuestProfile();
             }
@@ -3477,7 +3484,7 @@ Format strictly in clean Markdown with:
         }
 
         function applyUserProfile(user) {
-            if (!user) {
+            if (!user || user.auth_provider !== 'google') {
                 applyGuestProfile();
                 return;
             }
@@ -3544,18 +3551,20 @@ Format strictly in clean Markdown with:
             modal.style.display = 'flex';
             clearAuthAlert();
 
-            const navTabs = document.querySelector('.modal-nav-tabs');
+            const navTabs = document.getElementById('modal-nav-tabs');
             const modalTitle = document.getElementById('auth-modal-title');
             const modalSubtitle = document.getElementById('auth-modal-subtitle');
+            const paneSignin = document.getElementById('auth-pane-signin');
+            const paneProfile = document.getElementById('auth-pane-profile');
 
-            if (!currentUser) {
+            const isGoogleAuthed = currentUser && currentUser.auth_provider === 'google';
+
+            if (!isGoogleAuthed) {
                 // GUEST: Only provide Google Authentication
                 if (navTabs) navTabs.style.display = 'none';
                 if (modalTitle) modalTitle.textContent = 'Sign in with Google';
                 if (modalSubtitle) modalSubtitle.textContent = 'Sign in with your Google account to personalize Professor Nova & save progress';
 
-                const paneSignin = document.getElementById('auth-pane-signin');
-                const paneProfile = document.getElementById('auth-pane-profile');
                 if (paneSignin) paneSignin.style.display = 'block';
                 if (paneProfile) paneProfile.style.display = 'none';
 
@@ -3837,7 +3846,7 @@ Format strictly in clean Markdown with:
                 <button class="btn-action-mini" onclick="closeAuthModal()" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;">✕</button>
             </div>
 
-            <div class="modal-nav-tabs">
+            <div class="modal-nav-tabs" id="modal-nav-tabs" style="display:none;">
                 <button class="modal-tab active" id="tab-btn-signin" onclick="switchAuthTab('signin')">🔑 Google Sign In</button>
                 <button class="modal-tab" id="tab-btn-profile" onclick="switchAuthTab('profile')">✨ Personalization</button>
             </div>
