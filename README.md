@@ -47,8 +47,8 @@ An AI-powered Teaching Assistant web application built with a modern glassmorphi
 ### 2. Setup & Installation
 ```bash
 # Clone the repository
-git clone https://github.com/Ratnesh-181998/AI-Teaching-Assistant-.git
-cd AI-Teaching-Assistant-
+git clone https://github.com/Abhinandan-49/Aiteacherassistence.git
+cd Aiteacherassistence
 
 # Create and activate virtual environment
 python -m venv .venv
