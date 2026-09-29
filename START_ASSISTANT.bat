@@ -1,6 +1,11 @@
 @echo off
-echo Starting AI Teaching Assistant (Ollama Version)...
-echo.
+title Launch AI Teaching Assistant
 cd /d "%~dp0"
-python main_ollama.py
+if exist ".venv\Scripts\python.exe" (
+    start http://localhost:5000
+    ".venv\Scripts\python.exe" app.py
+) else (
+    start http://localhost:5000
+    python app.py
+)
 pause

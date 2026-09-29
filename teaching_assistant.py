@@ -1,0 +1,408 @@
+"""
+Core AI Teaching Assistant Engine
+Powered by Google Gemini 2.0 / 1.5, RAG retrieval, and intelligent pedagogy
+"""
+import os
+import re
+import json
+from typing import List, Dict, Any, Optional
+
+from config import Config
+from document_loader import DocumentLoader, Document
+from text_splitter import TextChunker
+from vector_store import VectorStoreManager
+from analytics_tracker import AnalyticsTracker
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
+
+
+class AITeachingAssistant:
+    """Intelligent AI Teaching Assistant with Gemini RAG pipeline"""
+
+    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
+        self.api_key = (api_key or Config.GEMINI_API_KEY).strip()
+        self.model_name = model_name or Config.DEFAULT_MODEL
+        self.vector_store_manager = VectorStoreManager(api_key=self.api_key)
+        self.chunker = TextChunker()
+        self.analytics = AnalyticsTracker()
+
+    def set_api_key(self, api_key: str):
+        """Update API key across all sub-components"""
+        self.api_key = api_key.strip()
+        Config.update_api_key(self.api_key)
+        self.vector_store_manager.set_api_key(self.api_key)
+
+    def set_model(self, model_name: str):
+        """Update active Gemini model"""
+        self.model_name = model_name.strip()
+
+    def _get_client(self):
+        """Create GenAI client"""
+        if not self.api_key or genai is None:
+            return None
+        try:
+            return genai.Client(api_key=self.api_key)
+        except Exception as e:
+            print(f"Failed to initialize Gemini Client: {e}")
+            return None
+
+    def ingest_files(self, file_paths: List[str]) -> Dict[str, Any]:
+        """Ingest multiple files (PDF, DOCX, PPTX, TXT, etc.) into the knowledge base"""
+        all_docs: List[Document] = []
+        errors = []
+
+        for path in file_paths:
+            try:
+                docs = DocumentLoader.load_any_file(path)
+                all_docs.extend(docs)
+            except Exception as e:
+                errors.append(f"{os.path.basename(path)}: {str(e)}")
+
+        if not all_docs:
+            return {
+                "success": False,
+                "message": "No text content could be extracted from uploaded files.",
+                "errors": errors
+            }
+
+        chunks = self.chunker.split_documents(all_docs)
+        self.vector_store_manager.add_documents(chunks)
+
+        return {
+            "success": True,
+            "message": f"Successfully indexed {len(file_paths)} file(s).",
+            "documents_loaded": len(all_docs),
+            "chunks_created": len(chunks),
+            "errors": errors
+        }
+
+    def ingest_youtube(self, url: str) -> Dict[str, Any]:
+        """Transcribe and index YouTube video lecture"""
+        try:
+            docs = DocumentLoader.load_from_youtube(url)
+            if not docs:
+                return {"success": False, "message": "No transcript available for this video."}
+
+            chunks = self.chunker.split_documents(docs)
+            self.vector_store_manager.add_documents(chunks)
+
+            title = docs[0].metadata.get("source", "YouTube Lecture")
+            return {
+                "success": True,
+                "message": f"Successfully transcribed and indexed: {title}",
+                "title": title,
+                "chunks": len(chunks)
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+    def ingest_wikipedia(self, query: str) -> Dict[str, Any]:
+        """Fetch and index Wikipedia topic"""
+        try:
+            docs = DocumentLoader.load_from_wikipedia(query)
+            chunks = self.chunker.split_documents(docs)
+            self.vector_store_manager.add_documents(chunks)
+            return {
+                "success": True,
+                "message": f"Indexed Wikipedia article for '{query}'",
+                "chunks": len(chunks)
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+    def ingest_text_note(self, title: str, content: str) -> Dict[str, Any]:
+        """Index direct text notes or lecture transcription"""
+        try:
+            if not content.strip():
+                return {"success": False, "message": "Content cannot be empty."}
+
+            doc = Document(
+                page_content=content.strip(),
+                metadata={"source": title.strip() or "Custom Lecture Note", "type": "note"}
+            )
+            chunks = self.chunker.split_documents([doc])
+            self.vector_store_manager.add_documents(chunks)
+            return {
+                "success": True,
+                "message": f"Indexed note '{title}' ({len(chunks)} chunks)",
+                "chunks": len(chunks)
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+    def ask(self, question: str, chat_history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
+        """
+        Query the AI Teaching Assistant with context retrieval and citation tracking
+        """
+        question = question.strip()
+        if not question:
+            return {"error": "Question cannot be empty"}
+
+        # Step 1: Retrieve relevant context
+        search_results = self.vector_store_manager.similarity_search_with_score(question, k=Config.TOP_K_RESULTS)
+
+        context_blocks = []
+        sources_list = []
+        seen_sources = set()
+
+        for doc, score in search_results:
+            src = doc.metadata.get("source", "Course Materials")
+            page = doc.metadata.get("page")
+            slide = doc.metadata.get("slide")
+            timestamp = doc.metadata.get("timestamp")
+            url = doc.metadata.get("url")
+
+            ref_tag = src
+            if page:
+                ref_tag += f" (Page {page})"
+            elif slide:
+                ref_tag += f" (Slide {slide})"
+            elif timestamp:
+                ref_tag += f" [Timestamp {timestamp}]"
+
+            context_blocks.append(f"--- Document Source: {ref_tag} ---\n{doc.page_content}")
+
+            if ref_tag not in seen_sources:
+                seen_sources.add(ref_tag)
+                sources_list.append({
+                    "title": ref_tag,
+                    "url": url,
+                    "type": doc.metadata.get("type", "document"),
+                    "relevance_score": round(score, 2)
+                })
+
+        context_str = "\n\n".join(context_blocks) if context_blocks else "No specific course materials found. Answer using general academic knowledge."
+
+        # Step 2: System prompt for pedagogical excellence
+        system_instruction = (
+            "You are Professor Nova, an exceptional, highly encouraging, and pedagogy-focused AI Teaching Assistant. "
+            "Your goal is to guide students towards deep conceptual clarity and academic mastery.\n\n"
+            "Pedagogical Guidelines:\n"
+            "1. Answer with structured clarity: introduce the core intuition first, then explain the mechanism step-by-step.\n"
+            "2. Whenever relevant, cite the course materials using inline references like [Source: Lecture 1] or [Page 4] or [03:25].\n"
+            "3. If code or mathematics is involved, format cleanly with syntax-highlighted code blocks or clean LaTeX.\n"
+            "4. Be supportive, empathetic, and engaging.\n"
+            "5. At the very end of your response, strictly output 3 concise follow-up questions formatted exactly as:\n"
+            "[FOLLOW_UP_QUESTIONS]\n"
+            "- Question 1\n"
+            "- Question 2\n"
+            "- Question 3"
+        )
+
+        user_prompt = (
+            f"RELEVANT COURSE MATERIALS CONTEXT:\n{context_str}\n\n"
+            f"STUDENT QUERY:\n{question}\n\n"
+            "Please provide a complete, clear, and comprehensive teaching explanation."
+        )
+
+        client = self._get_client()
+
+        if not client:
+            # Fallback response when API key is not yet set
+            sample_answer = (
+                f"### Welcome to AI Teaching Assistant!\n\n"
+                f"I received your question: **\"{question}\"**\n\n"
+                f"> **Gemini API Key Required:** To receive real-time neural explanations and deep insights, "
+                f"please enter your **Google Gemini API Key** in the **Settings** tab (or set `GEMINI_API_KEY` in your `.env` file).\n\n"
+                f"#### Matched Materials Preview:\n"
+                f"Here are relevant excerpts found in your course knowledge base:\n\n"
+            )
+            for idx, doc in enumerate(search_results[:2]):
+                src = doc[0].metadata.get("source", "Document")
+                sample_answer += f"**Excerpt {idx+1} ({src}):**\n> {doc[0].page_content[:250]}...\n\n"
+
+            sample_answer += "\nOnce your API key is configured, I will synthesize, solve equations, write code, and answer any doubt in real time!"
+
+            follow_ups = [
+                "How do I obtain a free Google Gemini API key?",
+                "How do I upload custom lecture PDFs and notes?",
+                "Can you generate an interactive quiz from these notes?"
+            ]
+
+            source_titles = [s["title"] for s in sources_list]
+            self.analytics.log_query(question, sample_answer, source_titles)
+
+            return {
+                "answer": sample_answer,
+                "sources": sources_list,
+                "follow_ups": follow_ups,
+                "model": "Setup Mode"
+            }
+
+        try:
+            # Call Gemini
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=[
+                    system_instruction,
+                    user_prompt
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=Config.TEMPERATURE,
+                    max_output_tokens=2048
+                )
+            )
+
+            raw_text = response.text or ""
+
+            # Extract follow-up questions
+            follow_ups = []
+            answer_text = raw_text
+            if "[FOLLOW_UP_QUESTIONS]" in raw_text:
+                parts = raw_text.split("[FOLLOW_UP_QUESTIONS]")
+                answer_text = parts[0].strip()
+                follow_up_lines = parts[1].strip().split("\n")
+                for line in follow_up_lines:
+                    cleaned = re.sub(r'^[-*0-9.)\s]+', '', line).strip()
+                    if cleaned:
+                        follow_ups.append(cleaned)
+
+            if not follow_ups:
+                follow_ups = [
+                    "Can you explain this with a real-world example?",
+                    "What are the most common exam questions on this topic?",
+                    "How does this connect to the previous chapter?"
+                ]
+
+            # Log to student analytics
+            source_titles = [s["title"] for s in sources_list]
+            self.analytics.log_query(question, answer_text, source_titles)
+
+            return {
+                "answer": answer_text,
+                "sources": sources_list,
+                "follow_ups": follow_ups[:3],
+                "model": self.model_name
+            }
+
+        except Exception as e:
+            return {
+                "error": f"Gemini API Error: {str(e)}",
+                "answer": f"⚠️ An error occurred while communicating with Google Gemini: {str(e)}\n\nPlease verify your API key in Settings.",
+                "sources": sources_list,
+                "follow_ups": []
+            }
+
+    def generate_quiz(self, topic: Optional[str] = None, num_questions: int = 5, difficulty: str = "Medium") -> Dict[str, Any]:
+        """Generate structured interactive quiz questions from course materials"""
+        client = self._get_client()
+        if not client:
+            return {
+                "success": False,
+                "error": "Google Gemini API Key is required to generate custom quizzes. Please enter your key in Settings."
+            }
+
+        # Gather context
+        query = topic or "key course concepts, principles, formulas, definitions, algorithms"
+        docs = self.vector_store_manager.similarity_search(query, k=6)
+        context_text = "\n\n".join([d.page_content for d in docs]) if docs else "General foundational topics."
+
+        prompt = (
+            f"You are an expert university examiner. Generate an interactive practice quiz with {num_questions} "
+            f"multiple-choice questions at '{difficulty}' difficulty based on the following course materials.\n\n"
+            f"COURSE MATERIALS CONTEXT:\n{context_text}\n\n"
+            f"Strict Output Format:\n"
+            f"Return ONLY valid JSON (no markdown formatting, no code fences, no extra text) with this exact schema:\n"
+            f"[\n"
+            f"  {{\n"
+            f"    \"id\": 1,\n"
+            f"    \"question\": \"Question text here?\",\n"
+            f"    \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],\n"
+            f"    \"correct_index\": 0,\n"
+            f"    \"explanation\": \"Detailed explanation of why this answer is correct.\",\n"
+            f"    \"difficulty\": \"{difficulty}\",\n"
+            f"    \"topic\": \"Specific subtopic\"\n"
+            f"  }}\n"
+            f"]"
+        )
+
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.3)
+            )
+
+            text = response.text.strip()
+            # Clean up potential markdown formatting
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+
+            questions = json.loads(text)
+            return {
+                "success": True,
+                "topic": topic or "Course Review",
+                "difficulty": difficulty,
+                "questions": questions
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to generate quiz: {str(e)}"
+            }
+
+    def generate_summary(self, topic: Optional[str] = None) -> Dict[str, Any]:
+        """Generate high-yield executive summary and interactive revision flashcards"""
+        client = self._get_client()
+        if not client:
+            return {
+                "success": False,
+                "error": "Google Gemini API Key is required. Please configure your key in Settings."
+            }
+
+        query = topic or "core summary, key principles, formulas, definitions, takeaways"
+        docs = self.vector_store_manager.similarity_search(query, k=6)
+        context_text = "\n\n".join([d.page_content for d in docs]) if docs else "Course knowledge base."
+
+        prompt = (
+            f"You are a master academic tutor. Based on the following course materials, generate an Executive Study Guide "
+            f"and 6 interactive revision flashcards.\n\n"
+            f"COURSE CONTEXT:\n{context_text}\n\n"
+            f"Strict Output Format:\n"
+            f"Return ONLY valid JSON matching this schema:\n"
+            f"{{\n"
+            f"  \"topic\": \"{topic or 'Course Mastery'}\",\n"
+            f"  \"executive_summary\": \"Markdown formatted 3-4 paragraph overview with key takeaways and formulas\",\n"
+            f"  \"key_concepts\": [\"Concept 1 description\", \"Concept 2 description\", \"Concept 3 description\"],\n"
+            f"  \"flashcards\": [\n"
+            f"    {{\"front\": \"Term or Question\", \"back\": \"Definition, formula, or concise explanation\"}}\n"
+            f"  ]\n"
+            f"}}"
+        )
+
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.3)
+            )
+
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+
+            data = json.loads(text)
+            return {
+                "success": True,
+                **data
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to generate study summary: {str(e)}"
+            }

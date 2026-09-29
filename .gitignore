@@ -35,9 +35,12 @@ ENV/
 
 # Vector store
 vector_store/
+vector_store_data/
 demo_vector_store/
 pdf_vector_store/
 wiki_vector_store/
+uploads/
+analytics_data/
 
 # IDE
 .vscode/

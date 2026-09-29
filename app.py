@@ -1,188 +1,237 @@
 """
-Flask Web Server for AI Teaching Assistant
-Provides REST API for the teaching assistant
+Flask Web Application for AI Teaching Assistant
+Provides comprehensive REST APIs for chat, multimodal material ingestion,
+interactive quizzes, executive study summaries, and learning analytics.
 """
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from main import AITeachingAssistant
-from config import Config
-import os
+from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+from config import Config
+from teaching_assistant import AITeachingAssistant
+
+app = Flask(__name__, template_folder='templates', static_folder='static')
+app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
 CORS(app)
 
-# Initialize Teaching Assistant
+# Initialize Core Teaching Assistant
 ta = AITeachingAssistant()
 
-# Try to load existing knowledge base
-if os.path.exists(Config.VECTOR_STORE_PATH):
-    ta.load_knowledge_base()
-    ta.initialize_rag()
+
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 
 @app.route('/')
 def home():
-    """Home page"""
+    """Render the Modern Web App UI"""
     return render_template('index.html')
 
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
+    """System health check and configuration status"""
+    stats = ta.vector_store_manager.get_stats()
     return jsonify({
         'status': 'healthy',
-        'knowledge_base_loaded': ta.vector_store_manager.vector_store is not None
+        'api_key_configured': bool(ta.api_key),
+        'active_model': ta.model_name,
+        'available_models': Config.AVAILABLE_MODELS,
+        'total_documents': stats.get('total_documents', 0),
+        'total_chunks': stats.get('total_chunks', 0)
     })
 
 
-@app.route('/api/ask', methods=['POST'])
-def ask_question():
-    """
-    Ask a question to the teaching assistant
-    
-    Request body:
-    {
-        "question": "Your question here"
-    }
-    """
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    """Update API key or active Gemini model"""
+    try:
+        data = request.get_json() or {}
+        if 'api_key' in data:
+            new_key = data['api_key'].strip()
+            ta.set_api_key(new_key)
+
+        if 'model' in data:
+            new_model = data['model'].strip()
+            if new_model in Config.AVAILABLE_MODELS:
+                ta.set_model(new_model)
+
+        return jsonify({
+            'success': True,
+            'message': 'Settings updated successfully',
+            'api_key_configured': bool(ta.api_key),
+            'active_model': ta.model_name
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Ask a question to Professor Nova (RAG Powered)"""
     try:
         data = request.get_json()
-        
         if not data or 'question' not in data:
-            return jsonify({
-                'error': 'Missing question in request body'
-            }), 400
-        
+            return jsonify({'error': 'Missing question in request body'}), 400
+
         question = data['question']
-        
-        if not ta.vector_store_manager.vector_store:
-            return jsonify({
-                'error': 'Knowledge base not loaded. Please upload course materials first.'
-            }), 503
-        
-        response = ta.ask(question, verbose=False)
-        
+        chat_history = data.get('history', [])
+
+        response = ta.ask(question, chat_history=chat_history)
         return jsonify(response)
-    
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 500
+        return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/upload', methods=['POST'])
-def upload_materials():
-    """
-    Upload course materials
-    
-    Request body:
-    {
-        "sources": {
-            "youtube": ["url1", "url2"],
-            "pdf": ["path1", "path2"],
-            "wikipedia": ["query1"],
-            "text": ["path1"]
-        }
-    }
-    """
+@app.route('/api/upload-files', methods=['POST'])
+def upload_files():
+    """Upload and index multiple course files (PDF, DOCX, PPTX, TXT)"""
     try:
-        data = request.get_json()
-        
-        if not data or 'sources' not in data:
-            return jsonify({
-                'error': 'Missing sources in request body'
-            }), 400
-        
-        sources = data['sources']
-        
-        # Load materials
-        documents = ta.load_course_materials(sources)
-        
-        if not documents:
-            return jsonify({
-                'error': 'No documents loaded'
-            }), 400
-        
-        # Process documents
-        chunks = ta.process_documents(documents)
-        
-        # Save knowledge base
-        ta.save_knowledge_base()
-        
-        # Initialize RAG
-        ta.initialize_rag()
-        
-        return jsonify({
-            'message': 'Course materials uploaded successfully',
-            'documents_loaded': len(documents),
-            'chunks_created': len(chunks)
-        })
-    
+        if 'files' not in request.files:
+            return jsonify({'error': 'No file part in request'}), 400
+
+        files = request.files.getlist('files')
+        if not files or files[0].filename == '':
+            return jsonify({'error': 'No files selected'}), 400
+
+        saved_paths = []
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                save_path = os.path.join(Config.UPLOAD_FOLDER, filename)
+                file.save(save_path)
+                saved_paths.append(save_path)
+
+        if not saved_paths:
+            return jsonify({'error': 'No valid files uploaded. Supported: PDF, DOCX, PPTX, TXT, MD'}), 400
+
+        result = ta.ingest_files(saved_paths)
+        return jsonify(result)
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 500
+        return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/search', methods=['POST'])
-def similarity_search():
-    """
-    Perform similarity search
-    
-    Request body:
-    {
-        "query": "search query",
-        "k": 4
-    }
-    """
+@app.route('/api/youtube', methods=['POST'])
+def ingest_youtube():
+    """Transcribe and index YouTube video lecture URL"""
     try:
-        data = request.get_json()
-        
-        if not data or 'query' not in data:
-            return jsonify({
-                'error': 'Missing query in request body'
-            }), 400
-        
-        query = data['query']
-        k = data.get('k', Config.TOP_K_RESULTS)
-        
-        if not ta.vector_store_manager.vector_store:
-            return jsonify({
-                'error': 'Knowledge base not loaded'
-            }), 503
-        
-        results = ta.vector_store_manager.similarity_search_with_score(query, k)
-        
-        response = [
-            {
-                'content': doc.page_content,
-                'metadata': doc.metadata,
-                'score': float(score)
-            }
-            for doc, score in results
-        ]
-        
-        return jsonify({
-            'query': query,
-            'results': response
-        })
-    
+        data = request.get_json() or {}
+        url = data.get('url', '').strip()
+        if not url:
+            return jsonify({'error': 'Missing YouTube video URL'}), 400
+
+        result = ta.ingest_youtube(url)
+        return jsonify(result)
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 500
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/wikipedia', methods=['POST'])
+def ingest_wikipedia():
+    """Fetch and index Wikipedia academic topic"""
+    try:
+        data = request.get_json() or {}
+        query = data.get('query', '').strip()
+        if not query:
+            return jsonify({'error': 'Missing Wikipedia topic query'}), 400
+
+        result = ta.ingest_wikipedia(query)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/direct-note', methods=['POST'])
+def ingest_direct_note():
+    """Index direct lecture note text"""
+    try:
+        data = request.get_json() or {}
+        title = data.get('title', 'Lecture Note').strip()
+        content = data.get('content', '').strip()
+
+        if not content:
+            return jsonify({'error': 'Note content cannot be empty'}), 400
+
+        result = ta.ingest_text_note(title, content)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/materials', methods=['GET', 'DELETE'])
+def manage_materials():
+    """Inspect or delete indexed course materials"""
+    if request.method == 'GET':
+        stats = ta.vector_store_manager.get_stats()
+        return jsonify(stats)
+    elif request.method == 'DELETE':
+        data = request.get_json() or {}
+        source = data.get('source')
+        if source:
+            deleted = ta.vector_store_manager.delete_source(source)
+            return jsonify({'message': f'Deleted {deleted} chunks for source: {source}'})
+        else:
+            ta.vector_store_manager.clear()
+            return jsonify({'message': 'Knowledge base cleared successfully'})
+
+
+@app.route('/api/quiz/generate', methods=['POST'])
+def generate_quiz():
+    """Generate an interactive practice quiz from course notes"""
+    try:
+        data = request.get_json() or {}
+        topic = data.get('topic')
+        num_q = int(data.get('num_questions', 5))
+        difficulty = data.get('difficulty', 'Medium')
+
+        result = ta.generate_quiz(topic=topic, num_questions=num_q, difficulty=difficulty)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/quiz/submit', methods=['POST'])
+def submit_quiz():
+    """Submit quiz results and update student progress analytics"""
+    try:
+        data = request.get_json() or {}
+        ta.analytics.log_quiz_result(data)
+        return jsonify({'success': True, 'message': 'Quiz progress recorded'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/summary/generate', methods=['POST'])
+def generate_summary():
+    """Generate executive summary and flashcards"""
+    try:
+        data = request.get_json() or {}
+        topic = data.get('topic')
+        result = ta.generate_summary(topic=topic)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics', methods=['GET'])
+def get_analytics():
+    """Get student learning dashboard stats and past doubts"""
+    try:
+        dashboard = ta.analytics.get_dashboard_data()
+        return jsonify(dashboard)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
-    print("\n" + "=" * 60)
-    print("Starting AI Teaching Assistant Server")
-    print("=" * 60)
-    print(f"Server running at: http://localhost:5000")
-    print(f"API Endpoints:")
-    print(f"  - GET  /api/health")
-    print(f"  - POST /api/ask")
-    print(f"  - POST /api/upload")
-    print(f"  - POST /api/search")
-    print("=" * 60 + "\n")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    print("\n" + "=" * 65)
+    print("   AI TEACHING ASSISTANT - FULL-STACK PLATFORM")
+    print("=" * 65)
+    print(f" Web UI: http://localhost:{port}")
+    print(f" LLM:    Google Gemini ({ta.model_name})")
+    print(f" Status: {'API Key Active' if ta.api_key else 'Setup Mode (Set key in Settings tab)'}")
+    print("=" * 65 + "\n")
+
+    app.run(debug=True, host='0.0.0.0', port=port)

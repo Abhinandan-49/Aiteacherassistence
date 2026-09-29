@@ -1,8 +1,18 @@
 @echo off
-echo Starting AI Teaching Assistant Web UI (Ollama Version)...
+title AI Teaching Assistant (Google Gemini RAG)
+echo =====================================================================
+echo           Starting AI Teaching Assistant Full-Stack Platform
+echo =====================================================================
 echo.
-echo Open your browser to: http://localhost:5000
+echo Local Web UI: http://localhost:5000
 echo.
+
 cd /d "%~dp0"
-python app_ollama.py
+
+if exist ".venv\Scripts\python.exe" (
+    ".venv\Scripts\python.exe" app.py
+) else (
+    python app.py
+)
+
 pause
