@@ -152,3 +152,13 @@ class AnalyticsTracker:
                 "recent_history": [],
                 "recent_quizzes": []
             }
+
+    def clear_history(self) -> bool:
+        """Reset student doubt history"""
+        try:
+            with open(self.history_file, 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=2)
+            return True
+        except Exception as e:
+            print(f"Error clearing history: {e}")
+            return False

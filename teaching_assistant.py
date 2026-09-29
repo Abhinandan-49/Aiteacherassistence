@@ -230,8 +230,20 @@ class AITeachingAssistant:
             "- Question 3"
         )
 
+        history_context = ""
+        if chat_history and isinstance(chat_history, list):
+            turns = []
+            for msg in chat_history[-6:]:
+                role = "Student" if msg.get("role") in ["user", "student"] else "Professor Nova"
+                content = (msg.get("content") or msg.get("text") or "").strip()
+                if content:
+                    turns.append(f"{role}: {content[:400]}")
+            if turns:
+                history_context = "PREVIOUS CONVERSATION CONTEXT:\n" + "\n".join(turns) + "\n\n"
+
         user_prompt = (
             f"RELEVANT COURSE MATERIALS CONTEXT:\n{context_str}\n\n"
+            f"{history_context}"
             f"STUDENT QUERY:\n{question}\n\n"
             "Please provide a complete, clear, and comprehensive teaching explanation."
         )

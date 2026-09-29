@@ -1591,7 +1591,14 @@
                 </div>
             </div>
 
-            <div class="header-status-group">
+            <div class="header-status-group" style="display:flex; align-items:center; gap:8px;">
+                <div class="chip-ai-model" id="history-saved-badge" style="font-size:0.78rem; color:var(--accent-secondary); background:rgba(15, 118, 110, 0.08); border:1px solid rgba(15, 118, 110, 0.2);">
+                    <span>💾</span>
+                    <span id="save-status-text">History Saved</span>
+                </div>
+                <button class="btn-action-mini" id="clear-chat-btn" onclick="confirmClearChat()" title="Start a fresh study session" style="display:none; padding:4px 10px; font-size:0.78rem; background:rgba(255, 255, 255, 0.7); border:1px solid var(--border-warm);">
+                    🧹 Clear Chat
+                </button>
                 <div class="chip-ai-model">
                     <span style="font-size:0.95rem;">🎓</span>
                     <span id="current-model-label">Faculty Mentor Online</span>
@@ -1613,7 +1620,7 @@
 
                 <div class="chat-scroll-area" id="chat-messages">
                     <!-- Welcome Initial Message -->
-                    <div class="message-row assistant">
+                    <div class="message-row assistant" id="initial-welcome-message">
                         <div class="msg-avatar tutor">PN</div>
                         <div class="message-bubble">
                             <h3 style="margin-top:0;">Welcome to Office Hours! ☕</h3>
@@ -1999,6 +2006,13 @@
     </main>
 
     <script>
+        // Persistent Storage Keys
+        const STORAGE_KEYS = {
+            CHAT_HISTORY: 'prof_nova_chat_v2',
+            ACTIVE_QUIZ: 'prof_nova_quiz_v2',
+            STUDY_GUIDE: 'prof_nova_guide_v2'
+        };
+
         // Global Application State
         let currentView = 'chat';
         let isRecording = false;
@@ -2010,6 +2024,7 @@
         let currentFlashcardIndex = 0;
         let isGenerating = false;
         let currentAttachedFile = null;
+        let chatMessagesHistory = [];
 
         // View Titles (Humanized Academic Experience)
         const viewMeta = {
@@ -2052,6 +2067,11 @@
             if (viewMeta[viewId]) {
                 document.getElementById('top-title').textContent = viewMeta[viewId].title;
                 document.getElementById('top-subtitle').textContent = viewMeta[viewId].subtitle;
+            }
+
+            const clearBtn = document.getElementById('clear-chat-btn');
+            if (clearBtn) {
+                clearBtn.style.display = (viewId === 'chat' && chatMessagesHistory.length > 0) ? 'inline-flex' : 'none';
             }
 
             if (viewId === 'materials') loadMaterialsList();
@@ -2233,6 +2253,79 @@
             document.getElementById('chat-input').placeholder = "Ask Professor Nova any academic doubt from your PDF notes...";
         }
 
+        // Persistence Management Functions
+        function saveChatToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.CHAT_HISTORY, JSON.stringify(chatMessagesHistory));
+                const clearBtn = document.getElementById('clear-chat-btn');
+                if (clearBtn && currentView === 'chat') {
+                    clearBtn.style.display = chatMessagesHistory.length > 0 ? 'inline-flex' : 'none';
+                }
+                updateSaveBadge(`Saved (${chatMessagesHistory.length})`);
+            } catch (e) {
+                console.warn("Storage warning:", e);
+            }
+        }
+
+        function updateSaveBadge(text) {
+            const badge = document.getElementById('save-status-text');
+            if (badge) badge.textContent = text;
+        }
+
+        function loadChatFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        chatMessagesHistory = parsed;
+                        const container = document.getElementById('chat-messages');
+
+                        const divider = document.createElement('div');
+                        divider.style.textAlign = 'center';
+                        divider.style.margin = '20px 0 10px 0';
+                        divider.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted); background:var(--bg-canvas); padding:4px 14px; border-radius:20px; border:1px solid var(--border-warm); box-shadow:var(--shadow-warm-sm);">🕰️ Restored Study Session (${parsed.length} messages)</span>`;
+                        container.appendChild(divider);
+
+                        parsed.forEach(msg => {
+                            if (msg.role === 'user') {
+                                renderUserMessage(msg.text, false);
+                            } else if (msg.role === 'assistant') {
+                                renderAssistantMessage(msg.text, msg.sources || [], msg.followUps || [], false);
+                            }
+                        });
+
+                        container.scrollTop = container.scrollHeight;
+                        const clearBtn = document.getElementById('clear-chat-btn');
+                        if (clearBtn) clearBtn.style.display = 'inline-flex';
+                        updateSaveBadge(`Restored (${parsed.length})`);
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load chat history:", e);
+            }
+            return false;
+        }
+
+        function confirmClearChat() {
+            if (confirm("Would you like to clear your current office hours chat conversation? (Your indexed course documents and study progress will remain saved.)")) {
+                chatMessagesHistory = [];
+                localStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
+                const container = document.getElementById('chat-messages');
+                const welcome = document.getElementById('initial-welcome-message');
+                container.innerHTML = '';
+                if (welcome) {
+                    container.appendChild(welcome);
+                } else {
+                    location.reload();
+                }
+                const clearBtn = document.getElementById('clear-chat-btn');
+                if (clearBtn) clearBtn.style.display = 'none';
+                updateSaveBadge('Cleared');
+            }
+        }
+
         async function sendMessage() {
             const input = document.getElementById('chat-input');
             const question = input.value.trim();
@@ -2242,41 +2335,57 @@
             isGenerating = true;
             document.getElementById('chat-send-btn').disabled = true;
 
-            // Render User Bubble
-            renderUserMessage(question);
+            // Render User Bubble and record to local storage
+            renderUserMessage(question, true);
 
             // Render Assistant Typing placeholder
             const typingId = renderTypingIndicator();
+
+            // Prepare recent context turns for Gemini
+            const recentHistory = chatMessagesHistory.slice(-8).map(m => ({
+                role: m.role,
+                content: m.text
+            }));
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question })
+                    body: JSON.stringify({ question, history: recentHistory })
                 });
 
                 const data = await response.json();
                 removeTypingIndicator(typingId);
 
                 if (data.error && !data.answer) {
-                    renderAssistantMessage(`⚠️ Error: ${data.error}`);
+                    renderAssistantMessage(`⚠️ Error: ${data.error}`, [], [], true);
                 } else {
-                    renderAssistantMessage(data.answer, data.sources, data.follow_ups);
+                    renderAssistantMessage(data.answer, data.sources, data.follow_ups, true);
 
-                    if (document.getElementById('setting-auto-speech').checked) {
+                    const autoSpeech = document.getElementById('setting-auto-speech');
+                    if (autoSpeech && autoSpeech.checked) {
                         speakText(data.answer);
                     }
                 }
             } catch (err) {
                 removeTypingIndicator(typingId);
-                renderAssistantMessage(`⚠️ Connection failed: ${err.message}`);
+                renderAssistantMessage(`⚠️ Connection failed: ${err.message}`, [], [], true);
             } finally {
                 isGenerating = false;
                 document.getElementById('chat-send-btn').disabled = false;
             }
         }
 
-        function renderUserMessage(text) {
+        function renderUserMessage(text, save = true) {
+            if (save) {
+                chatMessagesHistory.push({
+                    role: 'user',
+                    text: text,
+                    timestamp: Date.now()
+                });
+                saveChatToLocalStorage();
+            }
+
             const container = document.getElementById('chat-messages');
             const row = document.createElement('div');
             row.className = 'message-row user';
@@ -2311,7 +2420,18 @@
             if (el) el.remove();
         }
 
-        function renderAssistantMessage(markdownText, sources = [], followUps = []) {
+        function renderAssistantMessage(markdownText, sources = [], followUps = [], save = true) {
+            if (save) {
+                chatMessagesHistory.push({
+                    role: 'assistant',
+                    text: markdownText,
+                    sources: sources || [],
+                    followUps: followUps || [],
+                    timestamp: Date.now()
+                });
+                saveChatToLocalStorage();
+            }
+
             const container = document.getElementById('chat-messages');
             const row = document.createElement('div');
             row.className = 'message-row assistant';
@@ -2616,6 +2736,7 @@
                     currentQuizScore = 0;
                     document.getElementById('quiz-results-container').style.display = 'none';
                     document.getElementById('quiz-active-container').style.display = 'flex';
+                    saveQuizState();
                     renderQuizQuestion();
                 } else {
                     alert("Quiz generation notice: " + (data.error || "Please ensure your Gemini API key is configured in Settings."));
@@ -2625,6 +2746,69 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<span>🚀 Start Practice Quiz</span>`;
+            }
+        }
+
+        function saveQuizState() {
+            try {
+                const topic = document.getElementById('quiz-topic') ? document.getElementById('quiz-topic').value : '';
+                const isComplete = (document.getElementById('quiz-results-container').style.display === 'flex');
+                localStorage.setItem(STORAGE_KEYS.ACTIVE_QUIZ, JSON.stringify({
+                    questions: activeQuizQuestions,
+                    currentIndex: currentQuizIndex,
+                    score: currentQuizScore,
+                    topic: topic,
+                    isComplete: isComplete
+                }));
+            } catch (e) {
+                console.warn("Could not save quiz state", e);
+            }
+        }
+
+        function loadQuizState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_QUIZ);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data && Array.isArray(data.questions) && data.questions.length > 0) {
+                        activeQuizQuestions = data.questions;
+                        currentQuizIndex = data.currentIndex || 0;
+                        currentQuizScore = data.score || 0;
+                        if (data.topic && document.getElementById('quiz-topic')) {
+                            document.getElementById('quiz-topic').value = data.topic;
+                        }
+                        if (data.isComplete) {
+                            renderCompletedScorecard();
+                        } else {
+                            document.getElementById('quiz-results-container').style.display = 'none';
+                            document.getElementById('quiz-active-container').style.display = 'flex';
+                            renderQuizQuestion();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading quiz state", e);
+            }
+        }
+
+        function renderCompletedScorecard() {
+            document.getElementById('quiz-active-container').style.display = 'none';
+            const results = document.getElementById('quiz-results-container');
+            results.style.display = 'flex';
+
+            const total = activeQuizQuestions.length || 1;
+            const pct = Math.round((currentQuizScore / total) * 100);
+            document.getElementById('quiz-final-score').textContent = `${pct}%`;
+
+            if (pct >= 80) {
+                document.getElementById('quiz-score-title').textContent = "🌟 Outstanding Academic Mastery!";
+                document.getElementById('quiz-score-subtext').textContent = `You aced ${currentQuizScore} out of ${total} questions. You're in prime exam shape!`;
+            } else if (pct >= 60) {
+                document.getElementById('quiz-score-title').textContent = "👍 Solid Conceptual Foundation";
+                document.getElementById('quiz-score-subtext').textContent = `You answered ${currentQuizScore} out of ${total} correctly. A quick review will solidify this topic.`;
+            } else {
+                document.getElementById('quiz-score-title').textContent = "📚 Room for Growth";
+                document.getElementById('quiz-score-subtext').textContent = `You scored ${currentQuizScore} out of ${total}. Bring these doubts to office hours and let's review them together!`;
             }
         }
 
@@ -2679,6 +2863,7 @@
             if (selectedIndex === targetIdx) {
                 currentQuizScore++;
             }
+            saveQuizState();
 
             const expBox = document.getElementById('quiz-explanation-box');
             expBox.innerHTML = `<strong>💡 Professor's Insight:</strong> ${escapeHtml(explanation || "This is the foundational solution derived from the course material.")}`;
@@ -2696,27 +2881,14 @@
         async function nextQuizQuestion() {
             if (currentQuizIndex < activeQuizQuestions.length - 1) {
                 currentQuizIndex++;
+                saveQuizState();
                 renderQuizQuestion();
             } else {
-                // Show final scorecard with human grading
-                document.getElementById('quiz-active-container').style.display = 'none';
-                const results = document.getElementById('quiz-results-container');
-                results.style.display = 'flex';
+                renderCompletedScorecard();
+                saveQuizState();
 
                 const total = activeQuizQuestions.length;
                 const pct = Math.round((currentQuizScore / total) * 100);
-                document.getElementById('quiz-final-score').textContent = `${pct}%`;
-
-                if (pct >= 80) {
-                    document.getElementById('quiz-score-title').textContent = "🌟 Outstanding Academic Mastery!";
-                    document.getElementById('quiz-score-subtext').textContent = `You aced ${currentQuizScore} out of ${total} questions. You're in prime exam shape!`;
-                } else if (pct >= 60) {
-                    document.getElementById('quiz-score-title').textContent = "👍 Solid Conceptual Foundation";
-                    document.getElementById('quiz-score-subtext').textContent = `You answered ${currentQuizScore} out of ${total} correctly. A quick review will solidify this topic.`;
-                } else {
-                    document.getElementById('quiz-score-title').textContent = "📚 Room for Growth";
-                    document.getElementById('quiz-score-subtext').textContent = `You scored ${currentQuizScore} out of ${total}. Bring these doubts to office hours and let's review them together!`;
-                }
 
                 // Confetti if score >= 70%
                 if (pct >= 70 && typeof confetti === 'function') {
@@ -2742,6 +2914,41 @@
             sendQuickPrompt(`Professor Nova, I just completed a practice exam drill on '${topic}' and want to review the key concepts and common pitfalls. Could you summarize the core principles I should focus on?`);
         }
 
+        function saveStudyGuideState(markdown, flashcards = [], topic = '') {
+            try {
+                localStorage.setItem(STORAGE_KEYS.STUDY_GUIDE, JSON.stringify({
+                    markdown: markdown,
+                    flashcards: flashcards,
+                    topic: topic
+                }));
+            } catch (e) {
+                console.warn("Could not save study guide", e);
+            }
+        }
+
+        function loadStudyGuideState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.STUDY_GUIDE);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data && data.markdown) {
+                        document.getElementById('summary-display-area').style.display = 'flex';
+                        document.getElementById('summary-markdown-content').innerHTML = marked.parse(data.markdown);
+                        if (data.topic && document.getElementById('summary-topic')) {
+                            document.getElementById('summary-topic').value = data.topic;
+                        }
+                        activeFlashcards = data.flashcards || [];
+                        currentFlashcardIndex = 0;
+                        if (activeFlashcards.length > 0) {
+                            renderFlashcard();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading study guide", e);
+            }
+        }
+
         async function generateCheatSheet() {
             const topic = document.getElementById('summary-topic').value.trim() || 'Core Course Syllabus';
             const btn = document.getElementById('btn-cheat-sheet');
@@ -2764,7 +2971,7 @@ Format strictly in clean Markdown with:
                 const data = await resp.json();
                 document.getElementById('summary-display-area').style.display = 'flex';
                 const el = document.getElementById('summary-markdown-content');
-                el.innerHTML = `
+                const cheatSheetContent = `
                     <div style="background:rgba(15, 118, 110, 0.08); border:1px solid rgba(15, 118, 110, 0.25); border-radius:12px; padding:14px 18px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div>
                             <strong style="color:var(--accent-secondary); font-size:1.05rem;">📑 High-Yield 1-Page Exam Cheat Sheet: ${escapeHtml(topic)}</strong>
@@ -2774,7 +2981,9 @@ Format strictly in clean Markdown with:
                     </div>
                     ${marked.parse(data.answer || "Cheat sheet generated.")}
                 `;
+                el.innerHTML = cheatSheetContent;
                 el.scrollIntoView({ behavior: 'smooth' });
+                saveStudyGuideState(data.answer || "Cheat sheet generated.", activeFlashcards, topic);
             } catch (e) {
                 alert('Failed to generate cheat sheet: ' + e.message);
             } finally {
@@ -2807,6 +3016,7 @@ Format strictly in clean Markdown with:
                     if (activeFlashcards.length > 0) {
                         renderFlashcard();
                     }
+                    saveStudyGuideState(data.executive_summary || '', activeFlashcards, topic);
                 } else {
                     alert("Notice: " + (data.error || "Please set your Gemini API key in Settings."));
                 }
@@ -2941,10 +3151,48 @@ Format strictly in clean Markdown with:
             return div.innerHTML;
         }
 
-        // Run Health Check on Load
-        window.addEventListener('DOMContentLoaded', () => {
+        // Run Initialization and Restore Saved State on Load
+        window.addEventListener('DOMContentLoaded', async () => {
             checkHealth();
             loadMaterialsList();
+
+            // Restore persistent states across browser sessions
+            const chatRestored = loadChatFromLocalStorage();
+            loadQuizState();
+            loadStudyGuideState();
+            loadAnalytics();
+
+            // If local chat was empty, check server history for past doubts to offer instant resumption
+            if (!chatRestored) {
+                try {
+                    const resp = await fetch('/api/history');
+                    const data = await resp.json();
+                    if (data && data.history && data.history.length > 0) {
+                        const container = document.getElementById('chat-messages');
+                        const pastCard = document.createElement('div');
+                        pastCard.className = 'message-row assistant';
+                        pastCard.style.marginTop = '15px';
+                        pastCard.innerHTML = `
+                            <div class="msg-avatar tutor">PN</div>
+                            <div class="message-bubble" style="background:rgba(255, 255, 255, 0.9); border:1px solid var(--border-warm);">
+                                <h4 style="margin-top:0; color:var(--accent-primary);">📚 Past Office Hour Sessions Available</h4>
+                                <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">You have <strong>${data.history.length}</strong> previous doubts recorded in your academic profile. Click any question below to resume that topic immediately:</p>
+                                <div class="follow-ups-container">
+                                    ${data.history.slice(0, 4).map(h => `
+                                        <div class="follow-up-pill" onclick="sendQuickPrompt('${escapeHtml(h.question)}')">
+                                            <span>💬</span>
+                                            <span>${escapeHtml(h.question)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(pastCard);
+                    }
+                } catch (e) {
+                    console.warn("Could not check server history", e);
+                }
+            }
         });
     </script>
 </body>

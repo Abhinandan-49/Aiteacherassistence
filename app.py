@@ -224,6 +224,27 @@ def get_analytics():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/history', methods=['GET', 'DELETE'])
+def manage_history():
+    """Get or clear recorded doubt history"""
+    try:
+        if request.method == 'DELETE':
+            success = ta.analytics.clear_history()
+            return jsonify({'success': success, 'message': 'Doubt history cleared'})
+        else:
+            dashboard = ta.analytics.get_dashboard_data()
+            return jsonify({
+                'history': dashboard.get('recent_history', []),
+                'stats': {
+                    'total_queries': dashboard.get('total_queries', 0),
+                    'total_quizzes': dashboard.get('total_quizzes_taken', 0),
+                    'accuracy': dashboard.get('accuracy_percent', 0)
+                }
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print("\n" + "=" * 65)
