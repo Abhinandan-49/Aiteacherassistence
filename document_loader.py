@@ -146,28 +146,146 @@ class DocumentLoader:
         return documents
 
     @staticmethod
-    def load_from_pdf(pdf_path: str) -> List[Document]:
-        """Load text from PDF with page numbers preserved"""
+    def _clean_extracted_text(text: str) -> str:
+        """Fix concatenated words, normalize spacing, and preserve readable layout"""
+        if not text:
+            return ""
+        # Separate joined camelCase words like LargeLanguageModels -> Large Language Models
+        cleaned = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+        cleaned = re.sub(r'([a-zA-Z])([0-9])', r'\1 \2', cleaned)
+        cleaned = re.sub(r'([0-9])([a-zA-Z])', r'\1 \2', cleaned)
+        # Collapse multiple horizontal whitespace but keep newlines
+        lines = []
+        for line in cleaned.splitlines():
+            line_str = re.sub(r'[ \t]+', ' ', line).strip()
+            if line_str:
+                lines.append(line_str)
+        return '\n'.join(lines)
+
+    @classmethod
+    def _ocr_with_gemini(cls, pdf_path: str, filename: str, api_key: Optional[str] = None) -> List[Document]:
+        """Use Gemini Multimodal Vision to accurately transcribe handwritten, scanned, or complex diagrammatic PDFs"""
+        try:
+            from config import Config
+            from google import genai
+            from google.genai import types
+
+            key = (api_key or Config.GEMINI_API_KEY).strip()
+            if not key:
+                return []
+
+            client = genai.Client(api_key=key)
+            with open(pdf_path, 'rb') as f:
+                pdf_bytes = f.read()
+
+            prompt = (
+                "You are an expert academic document transcriber and OCR engine.\n"
+                "Please extract and transcribe the entire educational content of this PDF file with absolute precision.\n"
+                "Structure your output strictly using page headers in this exact format:\n"
+                "--- PAGE [page_number] ---\n"
+                "For each page, transcribe all titles, paragraphs, handwritten notes, mathematical formulas, "
+                "diagram descriptions, workflow steps, and definitions so a student can study and ask questions about them.\n"
+                "Do not summarize or skip content. Transcribe comprehensively."
+            )
+
+            resp = client.models.generate_content(
+                model=Config.DEFAULT_MODEL,
+                contents=[
+                    types.Part.from_bytes(data=pdf_bytes, mime_type='application/pdf'),
+                    prompt
+                ],
+                config=types.GenerateContentConfig(temperature=0.1)
+            )
+
+            raw_transcription = resp.text or ""
+            if not raw_transcription:
+                return []
+
+            documents = []
+            page_blocks = re.split(r'---\s*PAGE\s*(\d+)\s*---', raw_transcription, flags=re.IGNORECASE)
+            if len(page_blocks) > 1:
+                # page_blocks: [preamble, "1", text_page_1, "2", text_page_2, ...]
+                for i in range(1, len(page_blocks), 2):
+                    page_num = int(page_blocks[i])
+                    page_text = page_blocks[i + 1].strip()
+                    if page_text:
+                        documents.append(Document(
+                            page_content=page_text,
+                            metadata={
+                                "source": filename,
+                                "page": page_num,
+                                "type": "pdf",
+                                "extraction_method": "gemini_multimodal_ocr"
+                            }
+                        ))
+            else:
+                documents.append(Document(
+                    page_content=raw_transcription.strip(),
+                    metadata={
+                        "source": filename,
+                        "page": 1,
+                        "type": "pdf",
+                        "extraction_method": "gemini_multimodal_ocr"
+                    }
+                ))
+            return documents
+        except Exception as e:
+            print(f"Gemini multimodal OCR fallback error: {e}")
+            return []
+
+    @classmethod
+    def load_from_pdf(cls, pdf_path: str, api_key: Optional[str] = None) -> List[Document]:
+        """Load text from PDF with layout preservation and smart multimodal fallback"""
         if not os.path.exists(pdf_path):
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
-        reader = PdfReader(pdf_path)
-        documents = []
         filename = os.path.basename(pdf_path)
+        documents = []
 
-        for page_idx, page in enumerate(reader.pages):
-            text = page.extract_text() or ""
-            text = text.strip()
-            if text:
-                documents.append(Document(
-                    page_content=text,
-                    metadata={
-                        "source": filename,
-                        "page": page_idx + 1,
-                        "total_pages": len(reader.pages),
-                        "type": "pdf"
-                    }
-                ))
+        try:
+            reader = PdfReader(pdf_path)
+            total_pages = len(reader.pages)
+
+            for page_idx, page in enumerate(reader.pages):
+                # Try layout mode first to preserve spaces between words and columns
+                text = ""
+                try:
+                    text = page.extract_text(extraction_mode="layout") or ""
+                except Exception:
+                    pass
+                if not text:
+                    text = page.extract_text() or ""
+
+                cleaned = cls._clean_extracted_text(text)
+                if cleaned:
+                    documents.append(Document(
+                        page_content=cleaned,
+                        metadata={
+                            "source": filename,
+                            "page": page_idx + 1,
+                            "total_pages": total_pages,
+                            "type": "pdf"
+                        }
+                    ))
+        except Exception as err:
+            print(f"pypdf reader error: {err}")
+
+        # Check if extracted text is sparse, garbled, or handwriting/stylus artifacts
+        total_words = sum(len(d.page_content.split()) for d in documents)
+        avg_words_per_page = (total_words / max(1, len(documents))) if documents else 0
+
+        # Detect handwriting/stylus artifact: high ratio of isolated single letters (e.g. 'T e a c h i n g')
+        all_words = [w for d in documents for w in d.page_content.split()]
+        single_chars = [w for w in all_words if len(w) == 1 and w.lower() not in ['a', 'i']]
+        single_char_ratio = (len(single_chars) / max(1, len(all_words))) if all_words else 1.0
+
+        # If sparse, missing, or high ratio of single-letter fragments, trigger multimodal OCR
+        if (not documents or avg_words_per_page < 100 or single_char_ratio > 0.10) and os.path.exists(pdf_path):
+            print(f"PDF needs multimodal OCR (avg {avg_words_per_page:.1f} words/page, single-char ratio {single_char_ratio:.2f}). Transcribing '{filename}' via Gemini...")
+            ocr_docs = cls._ocr_with_gemini(pdf_path, filename, api_key=api_key)
+            if ocr_docs:
+                return ocr_docs
+
         return documents
 
     @staticmethod
@@ -295,11 +413,11 @@ class DocumentLoader:
         )]
 
     @classmethod
-    def load_any_file(cls, file_path: str) -> List[Document]:
+    def load_any_file(cls, file_path: str, api_key: Optional[str] = None) -> List[Document]:
         """Automatically route file based on extension"""
         ext = os.path.splitext(file_path)[1].lower().replace('.', '')
         if ext == 'pdf':
-            return cls.load_from_pdf(file_path)
+            return cls.load_from_pdf(file_path, api_key=api_key)
         elif ext == 'docx':
             return cls.load_from_docx(file_path)
         elif ext == 'pptx':

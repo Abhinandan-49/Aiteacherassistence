@@ -242,6 +242,15 @@ class VectorStoreManager:
         final_scores.sort(key=lambda x: x[1], reverse=True)
         top_k_indices = final_scores[:k]
 
+        # Ensure broad or overview queries ("pdf", "document", "summary", "notes") get comprehensive coverage
+        query_lower = query.lower()
+        is_broad = any(w in query_lower for w in ["pdf", "document", "notes", "file", "summary", "summarize", "overview", "lecture", "material"])
+        if is_broad or (final_scores and final_scores[0][1] < 0.25):
+            existing_indices = set(idx for idx, _ in top_k_indices)
+            for idx in range(len(self.documents)):
+                if idx not in existing_indices and len(top_k_indices) < min(k + 2, len(self.documents)):
+                    top_k_indices.append((idx, 0.45))
+
         results = []
         for idx, score_val in top_k_indices:
             results.append((self.documents[idx], score_val))

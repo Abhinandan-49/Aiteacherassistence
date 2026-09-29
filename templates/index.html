@@ -1,113 +1,74 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Teaching Assistant — Smart RAG Learning Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professor Nova — AI Teaching Assistant</title>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Warm Editorial Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Highlight.js for Syntax Highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <!-- Highlight.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <!-- Marked.js for Markdown Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <!-- Canvas Confetti for Quiz Celebrations -->
+    <!-- Canvas Confetti for Celebrations -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <style>
         /* ==================================================== */
-        /* CSS DESIGN SYSTEM & THEMES (DARK, LIGHT, WARM)       */
+        /* SINGLE WARM PALETTE WITH RICH TEXTURE & NO OVERLAPS   */
         /* ==================================================== */
         :root {
-            /* DARK THEME (DEFAULT) */
-            --bg-main: #0b0f19;
-            --bg-sidebar: #0f172a;
-            --bg-card: #131d33;
-            --bg-card-hover: #192640;
-            --bg-input: #1a233a;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(99, 102, 241, 0.45);
+            /* Warm Organic Paper & Clay Palette */
+            --bg-canvas: #fcf9f5;
+            --bg-sidebar: #f6efe6;
+            --bg-card: #ffffff;
+            --bg-card-subtle: #f9f4ed;
+            --bg-card-hover: #fdfbf7;
+            --bg-input: #ffffff;
             
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --primary-glow: rgba(99, 102, 241, 0.35);
+            --border-warm: #e8ded2;
+            --border-warm-subtle: #f0e7dc;
+            --border-warm-hover: #d8c8b4;
+            --border-accent: #c2651b;
             
-            --secondary: #06b6d4;
-            --accent: #ec4899;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            /* Warm Earth Accents */
+            --accent-primary: #b45309;
+            --accent-primary-hover: #92400e;
+            --accent-light: #fef3c7;
+            --accent-soft: rgba(180, 83, 9, 0.08);
+            --accent-glow: rgba(180, 83, 9, 0.18);
             
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-dim: #64748b;
+            --accent-secondary: #0f766e;
+            --accent-terracotta: #c2410c;
+            --accent-tag: #78350f;
             
-            --font-sans: 'Plus Jakarta Sans', sans-serif;
-            --font-display: 'Outfit', sans-serif;
+            /* Typography & Readable Non-Overlapping Text */
+            --text-title: #26190f;
+            --text-body: #3d2c1e;
+            --text-muted: #6e5846;
+            --text-subtle: #947e6c;
+            
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-heading: 'Outfit', Georgia, serif;
             --font-mono: 'JetBrains Mono', monospace;
             
-            --radius-sm: 8px;
-            --radius-md: 12px;
+            --radius-xs: 6px;
+            --radius-sm: 10px;
+            --radius-md: 14px;
             --radius-lg: 18px;
             --radius-xl: 24px;
             
-            --sidebar-width: 270px;
-            --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.18);
-        }
-
-        /* LIGHT THEME */
-        [data-theme="light"] {
-            --bg-main: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-hover: #f1f5f9;
-            --bg-input: #f1f5f9;
-            --border-color: rgba(0, 0, 0, 0.08);
-            --border-hover: rgba(99, 102, 241, 0.5);
-            
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --primary-glow: rgba(79, 70, 229, 0.25);
-            
-            --secondary: #0891b2;
-            --accent: #db2777;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --text-dim: #94a3b8;
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
-        }
-
-        /* WARM THEME (COZY AMBER / SEPIA STUDY MODE) */
-        [data-theme="warm"] {
-            --bg-main: #faf5eb;
-            --bg-sidebar: #f3ebd9;
-            --bg-card: #ffffff;
-            --bg-card-hover: #fcf9f2;
-            --bg-input: #f2e7d3;
-            --border-color: rgba(180, 83, 9, 0.16);
-            --border-hover: rgba(217, 119, 6, 0.5);
-            
-            --primary: #d97706;
-            --primary-hover: #b45309;
-            --primary-glow: rgba(217, 119, 6, 0.3);
-            
-            --secondary: #b45309;
-            --accent: #c2410c;
-            --success: #059669;
-            --warning: #d97706;
-            --danger: #dc2626;
-            
-            --text-main: #2b1f11;
-            --text-muted: #785a37;
-            --text-dim: #9e7d58;
-            --shadow-subtle: 0 4px 20px rgba(180, 83, 9, 0.08);
+            --sidebar-width: 260px;
+            --shadow-warm-sm: 0 2px 8px rgba(62, 44, 28, 0.04);
+            --shadow-warm: 0 4px 18px rgba(62, 44, 28, 0.06);
+            --shadow-lift: 0 10px 30px rgba(62, 44, 28, 0.09);
         }
 
         * {
@@ -115,44 +76,44 @@
             padding: 0;
             box-sizing: border-box;
             scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
+            scrollbar-color: var(--border-warm) transparent;
         }
 
         body {
             font-family: var(--font-sans);
-            background-color: var(--bg-main);
-            color: var(--text-main);
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
             height: 100vh;
             display: flex;
             overflow: hidden;
-            letter-spacing: -0.01em;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
         }
 
-        /* Ambient Glow Backdrop */
-        .ambient-glow {
+        /* Tactile Organic Paper Grain Background Texture */
+        .ambient-texture {
             position: fixed;
-            top: -20%;
-            right: 10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 12% 16%, rgba(217, 119, 6, 0.045) 0%, transparent 45%),
+                radial-gradient(circle at 88% 84%, rgba(194, 65, 12, 0.035) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.02) 0%, transparent 60%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.028'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 0;
         }
 
-        /* Mobile Sidebar Backdrop Overlay */
+        /* Mobile Backdrop Overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(38, 25, 15, 0.5);
             backdrop-filter: blur(4px);
             z-index: 99;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.25s ease;
         }
 
         .sidebar-overlay.active {
@@ -160,16 +121,17 @@
             opacity: 1;
         }
 
-        /* Sidebar Navigation */
+        /* Sidebar Navigation Dock */
         aside.sidebar {
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-warm);
             display: flex;
             flex-direction: column;
             z-index: 100;
             flex-shrink: 0;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
         .brand-box {
@@ -177,32 +139,42 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-warm);
         }
 
-        .brand-icon {
-            width: 42px;
-            height: 42px;
+        .brand-avatar {
+            width: 44px;
+            height: 44px;
             border-radius: var(--radius-md);
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, #d97706, #b45309);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            box-shadow: 0 4px 15px var(--primary-glow);
+            color: #ffffff;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 14px var(--accent-glow);
             flex-shrink: 0;
         }
 
-        .brand-info h1 {
-            font-family: var(--font-display);
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text-main);
+        .brand-text {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .brand-info span {
+        .brand-text h1 {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-title);
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-text span {
             font-size: 0.72rem;
-            color: var(--secondary);
+            color: var(--accent-primary);
             font-weight: 600;
             letter-spacing: 0.04em;
             text-transform: uppercase;
@@ -224,7 +196,7 @@
             align-items: center;
             gap: 12px;
             padding: 12px 14px;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-muted);
@@ -232,88 +204,74 @@
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s ease;
             text-align: left;
         }
 
         .nav-item button:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        [data-theme="light"] .nav-item button:hover,
-        [data-theme="warm"] .nav-item button:hover {
-            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-title);
+            background: rgba(62, 44, 28, 0.05);
         }
 
         .nav-item.active button {
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-color: var(--border-hover);
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        [data-theme="warm"] .nav-item.active button {
-            color: #fff;
-            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #ffffff;
+            background: linear-gradient(135deg, #b45309, #92400e);
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.28);
+            font-weight: 600;
         }
 
         .nav-icon {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .badge-pill {
             margin-left: auto;
-            background: rgba(99, 102, 241, 0.18);
-            color: var(--primary);
-            padding: 2px 8px;
-            border-radius: 20px;
+            background: rgba(180, 83, 9, 0.12);
+            color: var(--accent-primary);
+            padding: 3px 8px;
+            border-radius: 12px;
             font-size: 0.72rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
-        [data-theme="warm"] .badge-pill {
-            background: rgba(217, 119, 6, 0.18);
-            color: #b45309;
+        .nav-item.active .badge-pill {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
         }
 
         .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            padding: 16px 18px;
+            border-top: 1px solid var(--border-warm);
         }
 
-        .status-pill {
+        .status-badge {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            gap: 10px;
+            padding: 9px 12px;
             background: var(--bg-card);
             border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             font-size: 0.78rem;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--warning);
-            box-shadow: 0 0 8px var(--warning);
+            background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+            flex-shrink: 0;
         }
 
-        .status-dot.active {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success);
-        }
-
-        /* Main Workspace Container */
+        /* Main Workspace Viewport */
         main.main-viewport {
             flex: 1;
             display: flex;
@@ -321,127 +279,98 @@
             position: relative;
             z-index: 1;
             overflow: hidden;
+            min-width: 0;
         }
 
-        /* Top Header Bar */
+        /* Header Bar - Clear, Spacious Layout */
         header.top-bar {
-            min-height: 68px;
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-warm);
+            padding: 14px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 24px;
-            background: var(--bg-sidebar);
-            backdrop-filter: blur(12px);
-            gap: 16px;
-            flex-wrap: wrap;
+            gap: 18px;
+            flex-shrink: 0;
+            min-height: 72px;
         }
 
-        .header-left {
+        .header-title-group {
             display: flex;
             align-items: center;
             gap: 14px;
+            min-width: 0;
         }
 
-        .btn-mobile-menu {
+        .btn-hamburger {
             display: none;
             width: 40px;
             height: 40px;
             border-radius: var(--radius-sm);
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+            color: var(--text-title);
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1.3rem;
-            transition: var(--transition);
+            font-size: 1.25rem;
+            flex-shrink: 0;
         }
 
-        .view-heading h2 {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
+        .heading-text {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .heading-text h2 {
+            font-family: var(--font-heading);
+            font-size: 1.28rem;
             font-weight: 700;
+            color: var(--text-title);
+            line-height: 1.35;
         }
 
-        .view-heading p {
-            font-size: 0.78rem;
+        .heading-text p {
+            font-size: 0.82rem;
             color: var(--text-muted);
+            line-height: 1.4;
         }
 
-        .header-actions {
+        .header-status-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
-        /* Segmented 3-Way Theme Switcher */
-        .theme-switcher-pill {
-            display: flex;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 30px;
-            padding: 3px;
-            gap: 2px;
-        }
-
-        .theme-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 5px 12px;
+        .chip-ai-model {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+            color: var(--accent-primary);
+            padding: 7px 14px;
             border-radius: 20px;
-            font-size: 0.76rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
-            transition: var(--transition);
-        }
-
-        .theme-btn:hover {
-            color: var(--text-main);
-        }
-
-        .theme-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            box-shadow: 0 2px 8px var(--primary-glow);
-        }
-
-        .chip-model {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            font-size: 0.76rem;
-            font-weight: 600;
+            gap: 7px;
             white-space: nowrap;
         }
 
-        [data-theme="warm"] .chip-model {
-            background: rgba(217, 119, 6, 0.15);
-            border-color: rgba(217, 119, 6, 0.35);
-            color: #b45309;
-        }
-
-        /* Content Views Container */
+        /* Content Container */
         .content-container {
             flex: 1;
             overflow-y: auto;
             position: relative;
+            min-height: 0;
         }
 
         .view-panel {
             display: none;
             height: 100%;
-            animation: fadeIn 0.25s ease;
+            animation: panelFadeIn 0.22s ease-out;
         }
 
         .view-panel.active {
@@ -449,34 +378,60 @@
             flex-direction: column;
         }
 
-        @keyframes fadeIn {
+        @keyframes panelFadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* ==================================================== */
-        /* VIEW 1: CHAT / DOUBT SOLVER INTERFACE                */
+        /* VIEW 1: TUTOR CHAT & DOUBTS                         */
         /* ==================================================== */
         .chat-view {
             height: 100%;
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* Drag-and-drop dropzone indicator for chat */
+        .chat-drag-overlay {
+            display: none;
+            position: absolute;
+            inset: 12px;
+            background: rgba(254, 243, 199, 0.94);
+            border: 2px dashed var(--accent-primary);
+            border-radius: var(--radius-lg);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .chat-drag-overlay.active {
+            display: flex;
         }
 
         .chat-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 24px;
+            padding: 28px 36px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 24px;
         }
 
         .message-row {
             display: flex;
-            gap: 14px;
+            gap: 16px;
             max-width: 900px;
             width: 100%;
+            align-items: flex-start;
         }
 
         .message-row.user {
@@ -488,240 +443,314 @@
             align-self: flex-start;
         }
 
-        .avatar {
+        .msg-avatar {
             width: 38px;
             height: 38px;
-            border-radius: 50%;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.95rem;
-            flex-shrink: 0;
+            font-size: 0.96rem;
             font-weight: 700;
+            flex-shrink: 0;
         }
 
-        .avatar.assistant-avatar {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: 0 0 14px var(--primary-glow);
+        .msg-avatar.tutor {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
         }
 
-        .avatar.user-avatar {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
+        .msg-avatar.student {
+            background: var(--bg-card-subtle);
+            color: var(--text-title);
+            border: 1px solid var(--border-warm);
         }
 
         .message-bubble {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 16px 20px;
+            border: 1px solid var(--border-warm);
+            padding: 20px 24px;
             border-radius: var(--radius-lg);
-            font-size: 0.94rem;
-            line-height: 1.68;
-            box-shadow: var(--shadow-subtle);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-body);
+            box-shadow: var(--shadow-warm-sm);
             max-width: 820px;
             width: 100%;
             word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .message-row.user .message-bubble {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: white;
+            background: #b45309;
+            color: #ffffff;
             border: none;
             border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 16px rgba(180, 83, 9, 0.22);
         }
 
         .message-row.assistant .message-bubble {
             border-bottom-left-radius: 4px;
         }
 
-        .message-bubble h1, .message-bubble h2, .message-bubble h3 {
-            font-family: var(--font-display);
-            margin: 14px 0 8px 0;
-            color: var(--text-main);
+        /* Typography Inside Bubbles - Guaranteed No Collisions */
+        .message-bubble h1, .message-bubble h2, .message-bubble h3, .message-bubble h4 {
+            font-family: var(--font-heading);
+            color: var(--text-title);
+            margin: 16px 0 10px 0;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+
+        .message-bubble h1:first-child, .message-bubble h2:first-child, .message-bubble h3:first-child, .message-bubble h4:first-child {
+            margin-top: 0;
         }
 
         .message-bubble p {
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            line-height: 1.72;
         }
 
         .message-bubble p:last-child {
             margin-bottom: 0;
         }
 
+        .message-bubble ul, .message-bubble ol {
+            margin: 10px 0 16px 24px;
+            line-height: 1.7;
+        }
+
+        .message-bubble li {
+            margin-bottom: 7px;
+        }
+
+        .message-bubble blockquote {
+            border-left: 3.5px solid var(--accent-primary);
+            padding: 8px 16px;
+            margin: 12px 0 16px 0;
+            background: var(--bg-card-subtle);
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
         .message-bubble pre {
-            background: #090d16;
-            color: #f8fafc;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-md);
-            padding: 14px;
+            background: #23180f;
+            color: #fef3c7;
+            border-radius: var(--radius-sm);
+            padding: 16px;
             overflow-x: auto;
-            margin: 12px 0;
+            margin: 14px 0 16px 0;
             font-family: var(--font-mono);
-            font-size: 0.86rem;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .message-bubble code:not(pre code) {
-            background: rgba(99, 102, 241, 0.12);
-            color: var(--primary);
-            padding: 2px 6px;
-            border-radius: 4px;
+            background: rgba(180, 83, 9, 0.09);
+            color: #92400e;
+            padding: 3px 7px;
+            border-radius: 5px;
             font-family: var(--font-mono);
             font-size: 0.88rem;
         }
 
-        [data-theme="warm"] .message-bubble code:not(pre code) {
-            background: rgba(217, 119, 6, 0.15);
-            color: #b45309;
-        }
-
-        .sources-bar {
-            margin-top: 14px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-color);
+        /* Citations Bar */
+        .citations-bar {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-warm);
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
         }
 
-        .sources-label {
+        .citations-label {
             font-size: 0.74rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--text-dim);
+            color: var(--text-subtle);
             font-weight: 700;
         }
 
-        .source-tag {
-            background: rgba(6, 182, 212, 0.12);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            color: var(--secondary);
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.76rem;
+        .citation-tag {
+            background: rgba(180, 83, 9, 0.09);
+            border: 1px solid rgba(180, 83, 9, 0.25);
+            color: var(--accent-primary);
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 0.78rem;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             text-decoration: none;
-            transition: var(--transition);
+            transition: all 0.2s ease;
         }
 
-        .source-tag:hover {
-            background: rgba(6, 182, 212, 0.25);
+        .citation-tag:hover {
+            background: rgba(180, 83, 9, 0.18);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
         }
 
+        /* Follow-up Prompts */
         .follow-ups-container {
-            margin-top: 14px;
+            margin-top: 18px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-        }
-
-        .follow-up-pill {
-            background: rgba(99, 102, 241, 0.08);
-            border: 1px dashed var(--border-hover);
-            color: var(--text-main);
-            padding: 8px 14px;
-            border-radius: var(--radius-md);
-            font-size: 0.84rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: left;
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
 
+        .follow-up-title {
+            font-size: 0.76rem;
+            color: var(--text-subtle);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
+        }
+
+        .follow-up-pill {
+            background: var(--bg-card-subtle);
+            border: 1px dashed var(--border-warm);
+            color: var(--text-body);
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.45;
+        }
+
         .follow-up-pill:hover {
-            background: rgba(99, 102, 241, 0.18);
-            border-color: var(--primary);
+            background: var(--accent-soft);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
             transform: translateX(4px);
         }
 
-        [data-theme="warm"] .follow-up-pill {
-            background: rgba(217, 119, 6, 0.08);
-            border-color: rgba(217, 119, 6, 0.3);
-        }
-
         .bubble-actions {
-            margin-top: 12px;
+            margin-top: 14px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .btn-mini {
+        .btn-action-mini {
             background: transparent;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             color: var(--text-muted);
-            border-radius: var(--radius-sm);
-            padding: 4px 10px;
-            font-size: 0.76rem;
+            border-radius: var(--radius-xs);
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
-            transition: var(--transition);
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
-        .btn-mini:hover {
-            color: var(--text-main);
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.08);
+        .btn-action-mini:hover {
+            color: var(--text-title);
+            border-color: var(--accent-primary);
+            background: var(--accent-soft);
         }
 
-        /* Chat Input Bar */
+        /* Chat Input Bar - With Direct Attachment Pill */
         .chat-input-bar {
-            padding: 14px 24px 20px 24px;
-            background: var(--bg-sidebar);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-color);
+            padding: 14px 32px 22px 32px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-warm);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Active Attached Document Pill in Chat */
+        .attached-doc-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+            border-left: 3.5px solid var(--accent-primary);
+            padding: 7px 14px;
+            border-radius: var(--radius-xs);
+            font-size: 0.82rem;
+            color: var(--text-body);
+        }
+
+        .attached-doc-banner.active {
+            display: flex;
+        }
+
+        .attached-doc-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .attached-doc-title {
+            font-weight: 600;
+            color: var(--accent-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .quick-prompts {
             display: flex;
             gap: 8px;
-            margin-bottom: 12px;
             overflow-x: auto;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }
 
         .quick-prompt-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
             color: var(--text-muted);
-            border-radius: 20px;
-            padding: 5px 12px;
-            font-size: 0.78rem;
+            border-radius: 18px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            transition: var(--transition);
+            transition: all 0.2s ease;
         }
 
         .quick-prompt-btn:hover {
-            color: var(--text-main);
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-title);
+            border-color: var(--accent-primary);
+            background: var(--accent-soft);
         }
 
         .input-box-wrapper {
             display: flex;
             align-items: flex-end;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: var(--bg-card-subtle);
+            border: 1.5px solid var(--border-warm);
             border-radius: var(--radius-lg);
             padding: 8px 12px 8px 16px;
             gap: 10px;
-            transition: var(--transition);
-            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s ease;
         }
 
         .input-box-wrapper:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px var(--primary-glow);
+            border-color: var(--accent-primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3.5px var(--accent-glow);
         }
 
         .chat-textarea {
@@ -729,25 +758,26 @@
             background: transparent;
             border: none;
             outline: none;
-            color: var(--text-main);
+            color: var(--text-title);
             font-family: inherit;
-            font-size: 0.96rem;
+            font-size: 0.98rem;
             resize: none;
-            max-height: 160px;
-            min-height: 24px;
-            line-height: 1.5;
-            padding: 6px 0;
+            max-height: 140px;
+            min-height: 28px;
+            line-height: 1.55;
+            padding: 4px 0;
         }
 
         .chat-actions {
             display: flex;
             align-items: center;
             gap: 6px;
+            flex-shrink: 0;
         }
 
         .btn-icon-action {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: transparent;
             border: none;
@@ -757,45 +787,46 @@
             align-items: center;
             justify-content: center;
             font-size: 1.15rem;
-            transition: var(--transition);
+            transition: all 0.2s ease;
         }
 
         .btn-icon-action:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-title);
+            background: rgba(62, 44, 28, 0.08);
         }
 
         .btn-icon-action.recording {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.2);
-            animation: pulseRecord 1.2s infinite;
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.15);
+            animation: pulseWave 1.2s infinite;
         }
 
-        @keyframes pulseRecord {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        @keyframes pulseWave {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
         }
 
         .btn-send {
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, #d97706, #b45309);
             border: none;
-            color: #fff;
+            color: #ffffff;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
-            transition: var(--transition);
-            box-shadow: 0 4px 12px var(--primary-glow);
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.28);
+            flex-shrink: 0;
         }
 
         .btn-send:hover {
-            transform: scale(1.06);
-            box-shadow: 0 6px 18px var(--primary-glow);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(180, 83, 9, 0.35);
         }
 
         .btn-send:disabled {
@@ -808,80 +839,80 @@
         /* VIEW 2: COURSE MATERIALS INGESTION HUB               */
         /* ==================================================== */
         .materials-view {
-            padding: 24px;
+            padding: 28px 36px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            max-width: 1100px;
+            gap: 26px;
+            max-width: 1080px;
             margin: 0 auto;
             width: 100%;
         }
 
         .ingestion-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
 
         .card-panel {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
             padding: 22px;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            box-shadow: var(--shadow-subtle);
-            transition: var(--transition);
+            box-shadow: var(--shadow-warm-sm);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .card-panel:hover {
-            border-color: var(--border-hover);
+            border-color: var(--border-warm-hover);
+            box-shadow: var(--shadow-warm);
         }
 
         .card-panel-header {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .card-icon {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-sm);
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--primary);
+            background: var(--bg-card-subtle);
+            color: var(--accent-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
-        }
-
-        [data-theme="warm"] .card-icon {
-            background: rgba(217, 119, 6, 0.15);
-            color: #b45309;
+            border: 1px solid var(--border-warm);
         }
 
         .card-title h3 {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 1.1rem;
             font-weight: 700;
+            color: var(--text-title);
+            line-height: 1.3;
         }
 
         .card-title p {
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
+            line-height: 1.4;
         }
 
         .dropzone {
-            border: 2px dashed var(--border-hover);
+            border: 2px dashed #d8c8b4;
             border-radius: var(--radius-md);
-            padding: 28px 16px;
+            padding: 28px 18px;
             text-align: center;
-            background: rgba(99, 102, 241, 0.03);
+            background: var(--bg-card-subtle);
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -889,48 +920,49 @@
         }
 
         .dropzone:hover, .dropzone.dragover {
-            background: rgba(99, 102, 241, 0.08);
-            border-color: var(--primary);
+            background: var(--accent-soft);
+            border-color: var(--accent-primary);
         }
 
         .dropzone-icon {
             font-size: 2.2rem;
-            color: var(--primary);
+            color: var(--accent-primary);
         }
 
         .dropzone-text {
-            font-size: 0.92rem;
+            font-size: 0.94rem;
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-title);
         }
 
         .dropzone-hint {
             font-size: 0.76rem;
-            color: var(--text-dim);
+            color: var(--text-subtle);
         }
 
         .form-control-input {
             width: 100%;
             background: var(--bg-input);
-            border: 1px solid var(--border-color);
+            border: 1.5px solid var(--border-warm);
             border-radius: var(--radius-sm);
             padding: 10px 14px;
-            color: var(--text-main);
+            color: var(--text-title);
             font-size: 0.9rem;
             font-family: inherit;
             outline: none;
-            transition: var(--transition);
+            transition: all 0.2s ease;
         }
 
         .form-control-input:focus {
-            border-color: var(--primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            background: linear-gradient(135deg, #d97706, #b45309);
             border: none;
-            color: white;
-            padding: 10px 18px;
+            color: #ffffff;
+            padding: 11px 18px;
             border-radius: var(--radius-sm);
             font-weight: 600;
             font-size: 0.88rem;
@@ -939,21 +971,28 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: var(--transition);
-            box-shadow: 0 4px 14px var(--primary-glow);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.22);
         }
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 18px var(--primary-glow);
+            box-shadow: 0 6px 16px rgba(180, 83, 9, 0.32);
         }
 
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Materials Table */
         .materials-library {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
-            padding: 22px;
-            box-shadow: var(--shadow-subtle);
+            padding: 24px;
+            box-shadow: var(--shadow-warm-sm);
             overflow-x: auto;
         }
 
@@ -961,56 +1000,56 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
-            gap: 12px;
+            margin-bottom: 18px;
+            gap: 14px;
             flex-wrap: wrap;
         }
 
         .materials-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.88rem;
-            min-width: 500px;
+            font-size: 0.9rem;
+            min-width: 480px;
         }
 
         .materials-table th {
             text-align: left;
-            padding: 10px 14px;
-            color: var(--text-dim);
+            padding: 12px 14px;
+            color: var(--text-subtle);
             font-size: 0.74rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-warm);
         }
 
         .materials-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-main);
+            padding: 14px;
+            border-bottom: 1px solid var(--border-warm);
+            color: var(--text-body);
         }
 
         .tag-type {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 5px;
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
         }
 
-        .tag-pdf { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-        .tag-docx { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-        .tag-pptx { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-        .tag-youtube { background: rgba(220, 38, 38, 0.15); color: #ef4444; }
-        .tag-wiki { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .tag-note { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+        .tag-pdf { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+        .tag-docx { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .tag-pptx { background: rgba(217, 119, 6, 0.12); color: #b45309; }
+        .tag-youtube { background: rgba(220, 38, 38, 0.12); color: #b91c1c; }
+        .tag-wikipedia { background: rgba(16, 185, 129, 0.12); color: #047857; }
+        .tag-note { background: rgba(120, 53, 15, 0.1); color: #78350f; }
 
         /* ==================================================== */
-        /* VIEW 3: INTERACTIVE QUIZ & EXAM PREP                 */
+        /* VIEW 3: PRACTICE QUIZ & FLASHCARDS                   */
         /* ==================================================== */
-        .quiz-view {
-            padding: 24px;
-            max-width: 900px;
+        .quiz-view, .summary-view, .analytics-view, .settings-view {
+            padding: 28px 36px;
+            max-width: 920px;
             margin: 0 auto;
             width: 100%;
             display: flex;
@@ -1020,20 +1059,20 @@
 
         .quiz-config-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
             padding: 22px;
             display: flex;
             flex-wrap: wrap;
             gap: 16px;
             align-items: flex-end;
-            box-shadow: var(--shadow-subtle);
+            box-shadow: var(--shadow-warm-sm);
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 7px;
             flex: 1;
             min-width: 180px;
         }
@@ -1041,40 +1080,41 @@
         .form-group label {
             font-size: 0.8rem;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-title);
         }
 
         .quiz-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
-            padding: 26px;
+            padding: 28px;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            box-shadow: var(--shadow-subtle);
+            box-shadow: var(--shadow-warm);
         }
 
         .quiz-progress-bar {
             width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.08);
+            height: 7px;
+            background: var(--bg-card-subtle);
             border-radius: 4px;
             overflow: hidden;
         }
 
         .quiz-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background: linear-gradient(90deg, #d97706, #b45309);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.35s ease;
         }
 
         .quiz-question-title {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 1.25rem;
             font-weight: 600;
-            line-height: 1.45;
+            line-height: 1.5;
+            color: var(--text-title);
         }
 
         .quiz-options-list {
@@ -1084,100 +1124,64 @@
         }
 
         .quiz-option-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 14px 18px;
-            color: var(--text-main);
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-sm);
+            padding: 13px 18px;
+            color: var(--text-body);
             font-size: 0.94rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            transition: var(--transition);
+            gap: 14px;
+            transition: all 0.2s ease;
             text-align: left;
+            line-height: 1.5;
         }
 
         .quiz-option-btn:hover:not(:disabled) {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.08);
+            border-color: var(--accent-primary);
+            background: var(--accent-soft);
             transform: translateX(4px);
         }
 
         .quiz-option-btn.correct {
-            background: rgba(16, 185, 129, 0.15) !important;
+            background: rgba(16, 185, 129, 0.12) !important;
             border-color: #10b981 !important;
-            color: #10b981 !important;
+            color: #065f46 !important;
+            font-weight: 600;
         }
 
         .quiz-option-btn.incorrect {
-            background: rgba(239, 68, 68, 0.15) !important;
-            border-color: #ef4444 !important;
-            color: #ef4444 !important;
+            background: rgba(220, 38, 38, 0.1) !important;
+            border-color: #dc2626 !important;
+            color: #991b1b !important;
         }
 
         .quiz-explanation-box {
-            padding: 16px;
-            border-radius: var(--radius-md);
-            background: rgba(99, 102, 241, 0.08);
-            border-left: 4px solid var(--primary);
-            font-size: 0.88rem;
-            line-height: 1.55;
+            padding: 16px 18px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card-subtle);
+            border-left: 4px solid var(--accent-primary);
+            font-size: 0.9rem;
+            line-height: 1.65;
             display: none;
         }
 
-        .score-modal {
-            text-align: center;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .score-badge {
-            font-size: 3.5rem;
-            font-weight: 800;
-            font-family: var(--font-display);
-            background: linear-gradient(135deg, #10b981, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* ==================================================== */
-        /* VIEW 4: SUMMARY & FLASHCARDS                         */
-        /* ==================================================== */
-        .summary-view {
-            padding: 24px;
-            max-width: 950px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .flashcards-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-top: 16px;
-        }
-
-        /* 3D Flip Card */
+        /* 3D Flashcards - Fixed Text Overlap Bug */
         .flashcard-3d-wrapper {
             perspective: 1000px;
             width: 100%;
-            max-width: 580px;
-            height: 300px;
+            max-width: 600px;
+            min-height: 300px;
             cursor: pointer;
+            margin: 0 auto;
         }
 
         .flashcard-inner {
             position: relative;
             width: 100%;
-            height: 100%;
+            min-height: 300px;
             text-align: center;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
@@ -1189,170 +1193,134 @@
 
         .flashcard-face {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             backface-visibility: hidden;
             border-radius: var(--radius-xl);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            padding: 28px;
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
+            padding: 32px 28px 24px 28px;
+            box-shadow: var(--shadow-lift);
+            border: 1px solid var(--border-warm);
+            overflow-y: auto;
         }
 
         .flashcard-front {
-            background: linear-gradient(135deg, #1e1b4b, #172554);
-            color: #e0e7ff;
-        }
-
-        [data-theme="light"] .flashcard-front {
-            background: linear-gradient(135deg, #4338ca, #3b82f6);
-            color: #ffffff;
-        }
-
-        [data-theme="warm"] .flashcard-front {
-            background: linear-gradient(135deg, #78350f, #b45309);
-            color: #ffffff;
+            background: #ffffff;
+            color: var(--text-title);
         }
 
         .flashcard-back {
-            background: linear-gradient(135deg, #064e3b, #0f172a);
-            color: #d1fae5;
+            background: #251a11;
+            color: #fef3c7;
             transform: rotateY(180deg);
         }
 
-        [data-theme="light"] .flashcard-back {
-            background: linear-gradient(135deg, #059669, #0284c7);
-            color: #ffffff;
-        }
-
-        [data-theme="warm"] .flashcard-back {
-            background: linear-gradient(135deg, #451a03, #78350f);
-            color: #fef3c7;
-        }
-
-        .flashcard-hint {
-            position: absolute;
-            bottom: 14px;
-            font-size: 0.74rem;
-            opacity: 0.7;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .flashcard-text-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 0;
         }
 
         .flashcard-text {
-            font-family: var(--font-display);
-            font-size: 1.35rem;
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
             font-weight: 600;
-            line-height: 1.4;
+            line-height: 1.55;
+            text-align: center;
         }
 
-        .flashcard-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        /* ==================================================== */
-        /* VIEW 5: LEARNING ANALYTICS DASHBOARD                 */
-        /* ==================================================== */
-        .analytics-view {
-            padding: 24px;
-            max-width: 1050px;
-            margin: 0 auto;
+        .flashcard-hint {
+            font-size: 0.74rem;
+            opacity: 0.75;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(180, 83, 9, 0.25);
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
         }
 
+        .flashcard-back .flashcard-hint {
+            border-top-color: rgba(254, 243, 199, 0.25);
+        }
+
+        /* Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 16px;
         }
 
         .metric-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-warm);
             border-radius: var(--radius-lg);
             padding: 20px;
             display: flex;
             align-items: center;
             gap: 16px;
-            box-shadow: var(--shadow-subtle);
+            box-shadow: var(--shadow-warm-sm);
         }
 
         .metric-icon-box {
             width: 48px;
             height: 48px;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             flex-shrink: 0;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-warm);
+        }
+
+        .metric-data {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
         }
 
         .metric-data h4 {
-            font-size: 0.76rem;
-            color: var(--text-dim);
+            font-size: 0.74rem;
+            color: var(--text-subtle);
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
+            line-height: 1.3;
         }
 
         .metric-data .metric-value {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 1.6rem;
             font-weight: 700;
-            color: var(--text-main);
-        }
-
-        /* ==================================================== */
-        /* VIEW 6: SETTINGS MODAL & CONFIG                      */
-        /* ==================================================== */
-        .settings-view {
-            padding: 24px;
-            max-width: 700px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .settings-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: var(--shadow-subtle);
+            color: var(--text-title);
+            line-height: 1.25;
         }
 
         /* Loading Spinner */
         .spinner {
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(180, 83, 9, 0.22);
             border-radius: 50%;
-            border-top-color: currentColor;
-            animation: spin 0.8s linear infinite;
+            border-top-color: var(--accent-primary);
+            animation: spinCircle 0.8s linear infinite;
             display: inline-block;
+            flex-shrink: 0;
         }
 
-        @keyframes spin {
+        @keyframes spinCircle {
             to { transform: rotate(360deg); }
         }
 
-        /* ==================================================== */
-        /* ULTRA-RESPONSIVE MEDIA QUERIES                       */
-        /* ==================================================== */
-        @media (max-width: 860px) {
+        /* Responsive Breakpoints */
+        @media (max-width: 820px) {
             aside.sidebar {
                 position: fixed;
                 top: 0;
@@ -1360,60 +1328,44 @@
                 bottom: 0;
                 transform: translateX(-100%);
                 z-index: 1000;
-                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+                box-shadow: 10px 0 30px rgba(38, 25, 15, 0.2);
             }
 
             aside.sidebar.mobile-open {
                 transform: translateX(0);
             }
 
-            .btn-mobile-menu {
+            .btn-hamburger {
                 display: flex;
             }
 
             .chat-scroll-area {
-                padding: 16px;
+                padding: 18px;
             }
 
             .chat-input-bar {
-                padding: 10px 16px 16px 16px;
+                padding: 12px 18px 18px 18px;
             }
 
             .materials-view, .quiz-view, .summary-view, .analytics-view, .settings-view {
-                padding: 16px;
+                padding: 18px;
             }
 
-            .flashcard-3d-wrapper {
-                height: 260px;
+            .flashcard-3d-wrapper, .flashcard-inner {
+                min-height: 260px;
             }
 
             .flashcard-text {
                 font-size: 1.15rem;
             }
         }
-
-        @media (max-width: 480px) {
-            .theme-switcher-pill {
-                scale: 0.9;
-            }
-
-            .chip-model {
-                display: none;
-            }
-
-            .brand-box {
-                padding: 16px;
-            }
-
-            .message-bubble {
-                padding: 14px 16px;
-                font-size: 0.9rem;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="ambient-glow"></div>
+    <div class="ambient-texture"></div>
+
+    <!-- Hidden File Input for Direct Chat Ingestion -->
+    <input type="file" id="chat-file-input" style="display:none;" accept=".pdf,.docx,.pptx,.txt,.md" onchange="handleChatFileUpload(event)">
 
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
@@ -1421,17 +1373,10 @@
     <!-- Sidebar Navigation Dock -->
     <aside class="sidebar" id="app-sidebar">
         <div class="brand-box">
-            <div class="brand-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
-                    <path d="M6 6h10"></path>
-                    <path d="M6 10h10"></path>
-                    <path d="m9 16 2 2 4-4"></path>
-                </svg>
-            </div>
-            <div class="brand-info">
+            <div class="brand-avatar">🎓</div>
+            <div class="brand-text">
                 <h1>Professor Nova</h1>
-                <span>AI Teaching Assistant</span>
+                <span>Teaching Assistant</span>
             </div>
         </div>
 
@@ -1447,7 +1392,7 @@
                 <button onclick="switchView('materials')">
                     <span class="nav-icon">📚</span>
                     <span>Course Materials</span>
-                    <span class="badge-pill" id="badge-materials">0 Docs</span>
+                    <span class="badge-pill" id="badge-materials">1 Doc</span>
                 </button>
             </li>
             <li class="nav-item">
@@ -1459,13 +1404,13 @@
             <li class="nav-item">
                 <button onclick="switchView('summary')">
                     <span class="nav-icon">💡</span>
-                    <span>Summary & Cards</span>
+                    <span>Study Guide & Cards</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button onclick="switchView('analytics')">
                     <span class="nav-icon">📈</span>
-                    <span>Learning Analytics</span>
+                    <span>Learning Progress</span>
                 </button>
             </li>
             <li class="nav-item">
@@ -1477,8 +1422,8 @@
         </ul>
 
         <div class="sidebar-footer">
-            <div class="status-pill" id="gemini-status-pill">
-                <div class="status-dot active" id="gemini-status-dot"></div>
+            <div class="status-badge" id="gemini-status-pill">
+                <div class="status-dot" id="gemini-status-dot"></div>
                 <span id="gemini-status-text">Gemini 2.5 Active</span>
             </div>
         </div>
@@ -1488,25 +1433,18 @@
     <main class="main-viewport">
         <!-- Top App Bar -->
         <header class="top-bar">
-            <div class="header-left">
-                <button class="btn-mobile-menu" onclick="toggleMobileSidebar()" title="Toggle Navigation">
+            <div class="header-title-group">
+                <button class="btn-hamburger" onclick="toggleMobileSidebar()" title="Toggle Navigation Menu">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
-                <div class="view-heading">
-                    <h2 id="top-title">Tutor Chat & Doubt Resolution</h2>
-                    <p id="top-subtitle">Ask questions from your course lecture notes, slides, and videos</p>
+                <div class="heading-text">
+                    <h2 id="top-title">Tutor Chat & Doubts</h2>
+                    <p id="top-subtitle">Ask questions from your course lecture notes, slides, and PDFs</p>
                 </div>
             </div>
 
-            <div class="header-actions">
-                <!-- 3-Way Segmented Theme Switcher -->
-                <div class="theme-switcher-pill">
-                    <button class="theme-btn active" id="theme-btn-dark" onclick="setTheme('dark')" title="Dark Obsidian Theme">🌙 Dark</button>
-                    <button class="theme-btn" id="theme-btn-light" onclick="setTheme('light')" title="Clean Light Theme">☀️ Light</button>
-                    <button class="theme-btn" id="theme-btn-warm" onclick="setTheme('warm')" title="Cozy Warm Amber Theme">🕯️ Warm</button>
-                </div>
-
-                <div class="chip-model">
+            <div class="header-status-group">
+                <div class="chip-ai-model">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     <span id="current-model-label">Gemini 2.5 Flash</span>
                 </div>
@@ -1517,24 +1455,36 @@
         <div class="content-container">
 
             <!-- ================= VIEW 1: TUTOR CHAT ================= -->
-            <section id="view-chat" class="view-panel active chat-view">
+            <section id="view-chat" class="view-panel active chat-view" ondragover="handleChatDragOver(event)" ondragleave="handleChatDragLeave(event)" ondrop="handleChatDrop(event)">
+                
+                <!-- Drag overlay -->
+                <div class="chat-drag-overlay" id="chat-drag-overlay">
+                    <span style="font-size:2.5rem;">📄</span>
+                    <span>Drop your course PDF or notes here to index and ask!</span>
+                </div>
+
                 <div class="chat-scroll-area" id="chat-messages">
                     <!-- Welcome Initial Message -->
                     <div class="message-row assistant">
-                        <div class="avatar assistant-avatar">PN</div>
+                        <div class="msg-avatar tutor">PN</div>
                         <div class="message-bubble">
                             <h3 style="margin-top:0;">Hello! I'm Professor Nova 🎓</h3>
-                            <p>I'm your intelligent AI Teaching Assistant powered by <strong>Google Gemini 2.5</strong> and <strong>Retrieval-Augmented Generation (RAG)</strong>.</p>
-                            <p>Upload your course PDFs, lecture slides, or YouTube videos in the <strong>Course Materials</strong> tab, and I will cite exact pages, solve complex exercises, write code, and generate customized practice exams for you!</p>
+                            <p>I'm your personal learning mentor powered by <strong>Google Gemini 2.5</strong> and <strong>Retrieval-Augmented Generation (RAG)</strong>.</p>
+                            <p>Your course documents are actively indexed in the knowledge base. You can attach a new PDF anytime using the <strong>📎 paperclip icon</strong> below, or click any starter question to begin:</p>
+                            
                             <div class="follow-ups-container">
-                                <div class="follow-up-pill" onclick="sendQuickPrompt('What are the key concepts and challenges discussed in my uploaded PDF?')">
-                                    📄 What are the key concepts and challenges discussed in my uploaded PDF?
+                                <div class="follow-up-title">Recommended Starter Questions:</div>
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('What is the system design of an AI Teaching Assistant according to the uploaded PDF?')">
+                                    📄 What is the system design of an AI Teaching Assistant according to the uploaded PDF?
                                 </div>
-                                <div class="follow-up-pill" onclick="sendQuickPrompt('Can you explain Binary Search algorithm step-by-step?')">
-                                    💡 Can you explain Binary Search algorithm step-by-step?
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('How does the RAG pipeline work with FAISS and pgvector in the course notes?')">
+                                    ⚙️ How does the RAG pipeline work with FAISS and pgvector in the course notes?
                                 </div>
-                                <div class="follow-up-pill" onclick="switchView('materials')">
-                                    📤 Upload lecture PDFs, Word notes, or YouTube video
+                                <div class="follow-up-pill" onclick="sendQuickPrompt('Explain the document loading, splitting, and retrieval steps in LangChain')">
+                                    🧩 Explain the document loading, splitting, and retrieval steps in LangChain
+                                </div>
+                                <div class="follow-up-pill" onclick="document.getElementById('chat-file-input').click()">
+                                    📎 Attach another course PDF, slides, or lecture notes
                                 </div>
                             </div>
                         </div>
@@ -1543,15 +1493,33 @@
 
                 <!-- Chat Input Section -->
                 <div class="chat-input-bar">
+                    <!-- Active Attached Document Banner -->
+                    <div class="attached-doc-banner" id="attached-doc-banner">
+                        <div class="attached-doc-info">
+                            <span>📄</span>
+                            <span class="attached-doc-title" id="attached-doc-title">Active Document</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);" id="attached-doc-status">(Indexed)</span>
+                        </div>
+                        <button class="btn-action-mini" onclick="detachChatDocument()" style="padding:2px 8px; font-size:0.72rem;">✕ Dismiss</button>
+                    </div>
+
                     <div class="quick-prompts">
-                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('Explain this concept step-by-step with an intuitive real-world analogy')">🌱 Explain with real-world analogy</button>
-                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('Show me a practical code implementation with explanations')">💻 Show code implementation</button>
-                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('What are high-yield questions on this topic for my exams?')">🎯 High-yield exam points</button>
-                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('Summarize the mathematical formulas and proofs from my PDF')">📐 Formulas from PDF</button>
+                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('Explain this concept step-by-step with an intuitive real-world analogy')">🌱 Intuitive analogy</button>
+                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('What does my uploaded PDF say about this topic?')">📄 Reference uploaded PDF</button>
+                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('What are high-yield questions on this topic for my exams?')">🎯 Exam points</button>
+                        <button class="quick-prompt-btn" onclick="sendQuickPrompt('Summarize the key architectures and formulas from my course notes')">📐 Summarize notes</button>
                     </div>
 
                     <div class="input-box-wrapper">
-                        <textarea id="chat-input" class="chat-textarea" placeholder="Ask Professor Nova any academic question or doubt from your PDF..." rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+                        <!-- File Upload Button in Chat -->
+                        <button class="btn-icon-action" onclick="document.getElementById('chat-file-input').click()" title="Attach PDF or lecture notes">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                        </button>
+
+                        <textarea id="chat-input" class="chat-textarea" placeholder="Ask Professor Nova anything about your PDF notes..." rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+                        
                         <div class="chat-actions">
                             <button id="mic-btn" class="btn-icon-action" onclick="toggleVoiceInput()" title="Voice Speech-to-Text Input">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1586,18 +1554,18 @@
                         <div class="dropzone" id="file-dropzone" onclick="document.getElementById('file-input').click()">
                             <div class="dropzone-icon">☁️</div>
                             <div class="dropzone-text">Click or drag & drop files here</div>
-                            <div class="dropzone-hint">Supports PDF, DOCX, PPTX, TXT, MD (up to 32MB)</div>
+                            <div class="dropzone-hint">Supports PDF (with Multimodal OCR), DOCX, PPTX, TXT, MD</div>
                             <input type="file" id="file-input" multiple style="display:none;" onchange="handleFileSelection(event)">
                         </div>
-                        <div id="upload-status" style="font-size:0.84rem; color:var(--secondary); display:none;"></div>
+                        <div id="upload-status" style="font-size:0.86rem; color:var(--accent-primary); display:none;"></div>
                     </div>
 
                     <!-- YouTube Ingestion Card -->
                     <div class="card-panel">
                         <div class="card-panel-header">
-                            <div class="card-icon" style="color:#ef4444; background:rgba(239,68,68,0.15)">▶️</div>
+                            <div class="card-icon" style="color:#b91c1c;">▶️</div>
                             <div class="card-title">
-                                <h3>YouTube Video Transcriber</h3>
+                                <h3>YouTube Lecture Transcriber</h3>
                                 <p>Index video lecture transcripts with timestamp references</p>
                             </div>
                         </div>
@@ -1605,35 +1573,35 @@
                         <button class="btn-primary" onclick="submitYouTube()" id="btn-yt-submit">
                             <span>Transcribe & Index Lecture</span>
                         </button>
-                        <div id="yt-status" style="font-size:0.84rem; display:none;"></div>
+                        <div id="yt-status" style="font-size:0.86rem; display:none;"></div>
                     </div>
 
                     <!-- Wikipedia Ingestion Card -->
                     <div class="card-panel">
                         <div class="card-panel-header">
-                            <div class="card-icon" style="color:#10b981; background:rgba(16,185,129,0.15)">🌐</div>
+                            <div class="card-icon" style="color:#0f766e;">🌐</div>
                             <div class="card-title">
-                                <h3>Wikipedia Topic Notes</h3>
-                                <p>Pull structured encyclopedic summaries on any academic topic</p>
+                                <h3>Wikipedia Academic Topic</h3>
+                                <p>Pull foundational encyclopedic notes on any academic concept</p>
                             </div>
                         </div>
-                        <input type="text" id="wiki-query-input" class="form-control-input" placeholder="e.g. Backpropagation, Dynamic Programming, Photosynthesis">
+                        <input type="text" id="wiki-query-input" class="form-control-input" placeholder="e.g. Backpropagation, Dynamic Programming">
                         <button class="btn-primary" onclick="submitWikipedia()" id="btn-wiki-submit">
                             <span>Fetch Topic Notes</span>
                         </button>
-                        <div id="wiki-status" style="font-size:0.84rem; display:none;"></div>
+                        <div id="wiki-status" style="font-size:0.86rem; display:none;"></div>
                     </div>
 
                     <!-- Direct Note Card -->
                     <div class="card-panel">
                         <div class="card-panel-header">
-                            <div class="card-icon" style="color:#a855f7; background:rgba(168,85,247,0.15)">📝</div>
+                            <div class="card-icon" style="color:#78350f;">📝</div>
                             <div class="card-title">
                                 <h3>Direct Lecture Notes</h3>
-                                <p>Paste raw text notes or assignment problems</p>
+                                <p>Paste raw text notes or assignment questions</p>
                             </div>
                         </div>
-                        <input type="text" id="note-title-input" class="form-control-input" placeholder="Note Title (e.g. Lecture 4 Summary)">
+                        <input type="text" id="note-title-input" class="form-control-input" placeholder="Note Title (e.g. Chapter 2 Notes)">
                         <textarea id="note-content-input" class="form-control-input" rows="3" placeholder="Paste notes here..."></textarea>
                         <button class="btn-primary" onclick="submitDirectNote()" id="btn-note-submit">
                             <span>Add to Knowledge Base</span>
@@ -1645,10 +1613,10 @@
                 <div class="materials-library">
                     <div class="library-header">
                         <div>
-                            <h3 style="font-family:var(--font-display);">Indexed Course Knowledge Base</h3>
-                            <p style="font-size:0.8rem; color:var(--text-muted);" id="materials-count-summary">0 materials indexed</p>
+                            <h3 style="font-family:var(--font-heading); color:var(--text-title); font-size:1.18rem;">Indexed Course Knowledge Base</h3>
+                            <p style="font-size:0.82rem; color:var(--text-muted);" id="materials-count-summary">1 document source indexed</p>
                         </div>
-                        <button class="btn-mini" onclick="clearAllMaterials()" style="color:var(--danger); border-color:rgba(239,68,68,0.3);">
+                        <button class="btn-action-mini" onclick="clearAllMaterials()" style="color:#dc2626; border-color:#fca5a5;">
                             🗑️ Clear All
                         </button>
                     </div>
@@ -1664,8 +1632,8 @@
                         </thead>
                         <tbody id="materials-table-body">
                             <tr>
-                                <td colspan="4" style="text-align:center; color:var(--text-dim); padding:24px;">
-                                    No materials uploaded yet. Upload a PDF, lecture slides, or a YouTube video to begin!
+                                <td colspan="4" style="text-align:center; color:var(--text-subtle); padding:24px;">
+                                    Loading course materials...
                                 </td>
                             </tr>
                         </tbody>
@@ -1678,7 +1646,7 @@
                 <div class="quiz-config-card">
                     <div class="form-group">
                         <label>Subtopic or Chapter (Optional)</label>
-                        <input type="text" id="quiz-topic" class="form-control-input" placeholder="e.g. All materials or Neural Networks">
+                        <input type="text" id="quiz-topic" class="form-control-input" placeholder="e.g. RAG Architecture or All materials">
                     </div>
                     <div class="form-group" style="max-width:140px;">
                         <label>Questions</label>
@@ -1703,7 +1671,7 @@
 
                 <div id="quiz-active-container" class="quiz-card" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="quiz-counter" style="font-size:0.85rem; font-weight:600; color:var(--secondary);">Question 1 of 5</span>
+                        <span id="quiz-counter" style="font-size:0.88rem; font-weight:600; color:var(--accent-primary);">Question 1 of 5</span>
                         <span id="quiz-difficulty-tag" class="badge-pill">Medium</span>
                     </div>
 
@@ -1714,7 +1682,7 @@
                     <h3 class="quiz-question-title" id="quiz-question-text">Question text will appear here...</h3>
 
                     <div class="quiz-options-list" id="quiz-options-box">
-                        <!-- Options will be rendered dynamically -->
+                        <!-- Options rendered dynamically -->
                     </div>
 
                     <div class="quiz-explanation-box" id="quiz-explanation-box"></div>
@@ -1727,91 +1695,95 @@
                 </div>
 
                 <!-- Quiz Results Modal -->
-                <div id="quiz-results-container" class="quiz-card score-modal" style="display:none;">
-                    <div class="score-badge" id="quiz-final-score">80%</div>
-                    <h3 style="font-family:var(--font-display); font-size:1.6rem;" id="quiz-score-title">Outstanding Performance!</h3>
-                    <p style="color:var(--text-muted);" id="quiz-score-subtext">You answered 4 out of 5 questions correctly.</p>
+                <div id="quiz-results-container" class="quiz-card" style="display:none; text-align:center; padding:40px 24px; align-items:center;">
+                    <div style="font-size:3.8rem; font-weight:800; font-family:var(--font-heading); color:var(--accent-primary);" id="quiz-final-score">80%</div>
+                    <h3 style="font-family:var(--font-heading); font-size:1.55rem; color:var(--text-title);" id="quiz-score-title">Great Work!</h3>
+                    <p style="color:var(--text-muted); margin:8px 0 20px 0;" id="quiz-score-subtext">You answered 4 out of 5 questions correctly.</p>
                     <button class="btn-primary" onclick="generateQuiz()">
-                        <span>Take Another Quiz</span>
+                        <span>Take Another Practice Quiz</span>
                     </button>
                 </div>
             </section>
 
-            <!-- ================= VIEW 4: SUMMARY & FLASHCARDS ================= -->
+            <!-- ================= VIEW 4: STUDY GUIDE & 3D FLASHCARDS ================= -->
             <section id="view-summary" class="view-panel summary-view">
                 <div class="quiz-config-card">
                     <div class="form-group">
-                        <label>Select Focus Topic for Study Sheet & Flashcards</label>
-                        <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. Entire Course or Chapter 1">
+                        <label>Select Focus Topic for Study Guide & Flashcards</label>
+                        <input type="text" id="summary-topic" class="form-control-input" placeholder="e.g. All materials or System Architecture">
                     </div>
                     <button class="btn-primary" onclick="generateSummary()" id="btn-gen-summary">
                         <span>⚡ Generate Study Guide</span>
                     </button>
                 </div>
 
-                <div id="summary-display-area" style="display:none; display:flex; flex-direction:column; gap:24px;">
+                <div id="summary-display-area" style="display:none; display:flex; flex-direction:column; gap:26px;">
                     <!-- Executive Study Sheet -->
                     <div class="card-panel">
-                        <h3 style="font-family:var(--font-display); font-size:1.3rem;">📋 Executive Study Guide</h3>
-                        <div id="summary-markdown-content" style="line-height:1.7; color:var(--text-main);"></div>
+                        <h3 style="font-family:var(--font-heading); font-size:1.3rem; color:var(--text-title);">📋 Executive Study Guide</h3>
+                        <div id="summary-markdown-content" style="line-height:1.75; color:var(--text-body);"></div>
                     </div>
 
-                    <!-- Flashcards 3D Deck -->
+                    <!-- 3D Flashcards with Non-Overlapping Layout -->
                     <div class="card-panel">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3 style="font-family:var(--font-display); font-size:1.3rem;">🃏 Interactive 3D Flashcards</h3>
+                            <h3 style="font-family:var(--font-heading); font-size:1.3rem; color:var(--text-title);">🃏 3D Revision Flashcards</h3>
                             <span id="flashcard-counter" class="badge-pill">Card 1 / 6</span>
                         </div>
 
-                        <div class="flashcards-container">
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:18px; margin-top:16px;">
                             <div class="flashcard-3d-wrapper" onclick="this.classList.toggle('flipped')">
                                 <div class="flashcard-inner">
                                     <div class="flashcard-face flashcard-front">
-                                        <div class="flashcard-text" id="flashcard-front-text">Front of Flashcard</div>
+                                        <div class="flashcard-text-container">
+                                            <div class="flashcard-text" id="flashcard-front-text">Front of Flashcard</div>
+                                        </div>
                                         <div class="flashcard-hint">Click card to reveal answer 🔄</div>
                                     </div>
                                     <div class="flashcard-face flashcard-back">
-                                        <div class="flashcard-text" id="flashcard-back-text" style="font-size:1.15rem; font-weight:400;">Back of Flashcard</div>
+                                        <div class="flashcard-text-container">
+                                            <div class="flashcard-text" id="flashcard-back-text" style="font-size:1.15rem; font-weight:400;">Back of Flashcard</div>
+                                        </div>
                                         <div class="flashcard-hint">Click to flip back 🔄</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="flashcard-controls">
-                                <button class="btn-mini" onclick="prevFlashcard()">← Previous</button>
-                                <button class="btn-mini" onclick="nextFlashcard()">Next Card →</button>
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                <button class="btn-action-mini" onclick="prevFlashcard()">← Previous</button>
+                                <button class="btn-action-mini" onclick="nextFlashcard()">Next Card →</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ================= VIEW 5: LEARNING ANALYTICS ================= -->
+            <!-- ================= VIEW 5: LEARNING PROGRESS ================= -->
             <section id="view-analytics" class="view-panel analytics-view">
                 <div class="metrics-grid">
                     <div class="metric-card">
-                        <div class="metric-icon-box" style="background:rgba(99,102,241,0.15); color:var(--primary);">❓</div>
+                        <div class="metric-icon-box">❓</div>
                         <div class="metric-data">
-                            <h4>Total Doubts Asked</h4>
+                            <h4>Doubts Asked</h4>
                             <div class="metric-value" id="stat-queries">0</div>
                         </div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-icon-box" style="background:rgba(16,185,129,0.15); color:var(--success);">🎯</div>
+                        <div class="metric-icon-box">🎯</div>
                         <div class="metric-data">
-                            <h4>Quizzes Completed</h4>
+                            <h4>Quizzes Done</h4>
                             <div class="metric-value" id="stat-quizzes">0</div>
                         </div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-icon-box" style="background:rgba(6,182,212,0.15); color:var(--secondary);">📊</div>
+                        <div class="metric-icon-box">📊</div>
                         <div class="metric-data">
                             <h4>Quiz Accuracy</h4>
                             <div class="metric-value" id="stat-accuracy">0%</div>
                         </div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-icon-box" style="background:rgba(245,158,11,0.15); color:var(--warning);">🔥</div>
+                        <div class="metric-icon-box">🔥</div>
                         <div class="metric-data">
                             <h4>Study Streak</h4>
                             <div class="metric-value" id="stat-streak">1 Day</div>
@@ -1822,7 +1794,7 @@
                 <!-- Doubt History Table -->
                 <div class="materials-library">
                     <div class="library-header">
-                        <h3 style="font-family:var(--font-display);">Recent Doubt Inquiries</h3>
+                        <h3 style="font-family:var(--font-heading); color:var(--text-title); font-size:1.18rem;">Recent Doubt Inquiries</h3>
                     </div>
                     <table class="materials-table">
                         <thead>
@@ -1835,7 +1807,7 @@
                         </thead>
                         <tbody id="doubt-history-table">
                             <tr>
-                                <td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">
+                                <td colspan="4" style="text-align:center; color:var(--text-subtle); padding:22px;">
                                     No doubts recorded yet. Ask a question in Tutor Chat!
                                 </td>
                             </tr>
@@ -1846,10 +1818,10 @@
 
             <!-- ================= VIEW 6: SETTINGS ================= -->
             <section id="view-settings" class="view-panel settings-view">
-                <div class="settings-card">
-                    <h3 style="font-family:var(--font-display); font-size:1.3rem;">Google Gemini Configuration</h3>
-                    <p style="font-size:0.84rem; color:var(--text-muted); line-height:1.5;">
-                        Configure your Google Gemini API key to enable instant context generation, mathematical derivations, code writing, and quizzes.
+                <div class="card-panel">
+                    <h3 style="font-family:var(--font-heading); font-size:1.25rem; color:var(--text-title);">Google Gemini AI Configuration</h3>
+                    <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6;">
+                        Configure your Google Gemini API key to enable live neural explanations, PDF citations, OCR extraction, and interactive quizzes.
                     </p>
 
                     <div class="form-group">
@@ -1860,7 +1832,7 @@
                     <div class="form-group">
                         <label>Active Gemini Model</label>
                         <select id="settings-model" class="form-control-input">
-                            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Recommended — Fastest & Most Reliable)</option>
+                            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Fastest & Recommended)</option>
                             <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Analytical Reasoning)</option>
                             <option value="gemini-3.8-flash">Gemini 3.8 Flash (Cutting-edge)</option>
                         </select>
@@ -1871,17 +1843,17 @@
                             <span>Save Configuration</span>
                         </button>
                     </div>
-                    <div id="settings-status-msg" style="font-size:0.84rem; display:none;"></div>
+                    <div id="settings-status-msg" style="font-size:0.86rem; display:none;"></div>
                 </div>
 
-                <div class="settings-card">
-                    <h3 style="font-family:var(--font-display); font-size:1.3rem;">Voice & Speech Settings</h3>
+                <div class="card-panel">
+                    <h3 style="font-family:var(--font-heading); font-size:1.25rem; color:var(--text-title);">Voice & Speech Settings</h3>
                     <div style="display:flex; align-items:center; justify-content:space-between;">
                         <div>
-                            <div style="font-weight:600; font-size:0.92rem;">Auto-Read AI Answers Aloud</div>
-                            <div style="font-size:0.78rem; color:var(--text-dim);">Automatically speak tutor answers via browser speech synthesis</div>
+                            <div style="font-weight:600; font-size:0.92rem; color:var(--text-title);">Auto-Read AI Answers Aloud</div>
+                            <div style="font-size:0.8rem; color:var(--text-subtle);">Automatically read tutor responses aloud using browser speech synthesis</div>
                         </div>
-                        <input type="checkbox" id="setting-auto-speech" style="width:20px; height:20px; cursor:pointer;">
+                        <input type="checkbox" id="setting-auto-speech" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent-primary);">
                     </div>
                 </div>
             </section>
@@ -1900,14 +1872,15 @@
         let activeFlashcards = [];
         let currentFlashcardIndex = 0;
         let isGenerating = false;
+        let currentAttachedFile = null;
 
         // View Titles
         const viewMeta = {
-            chat: { title: "Tutor Chat & Doubt Resolution", subtitle: "Ask questions from your course lecture notes, slides, and videos" },
+            chat: { title: "Tutor Chat & Doubts", subtitle: "Ask questions from your course lecture notes, slides, and PDFs" },
             materials: { title: "Course Materials & Ingestion Hub", subtitle: "Upload PDFs, lecture slides, notes, or YouTube lectures" },
-            quiz: { title: "Interactive Quiz & Practice", subtitle: "Test your mastery with instant AI-generated practice exams" },
-            summary: { title: "Summary & 3D Flashcards", subtitle: "High-yield revision notes and spaced-repetition flashcards" },
-            analytics: { title: "Learning Analytics & Doubt History", subtitle: "Track student progress, accuracy, and review past doubts" },
+            quiz: { title: "Practice Quiz & Exam Prep", subtitle: "Test your mastery with instant AI-generated practice exams" },
+            summary: { title: "Study Guide & 3D Flashcards", subtitle: "High-yield revision notes and spaced-repetition flashcards" },
+            analytics: { title: "Learning Progress & Analytics", subtitle: "Track student progress, accuracy, and review past doubts" },
             settings: { title: "Settings & AI Configuration", subtitle: "Manage your Google Gemini API key and active model" }
         };
 
@@ -1940,7 +1913,6 @@
             const navItems = document.querySelectorAll('.nav-item');
             if (navItems[navIndex]) navItems[navIndex].classList.add('active');
 
-            // Update top titles
             if (viewMeta[viewId]) {
                 document.getElementById('top-title').textContent = viewMeta[viewId].title;
                 document.getElementById('top-subtitle').textContent = viewMeta[viewId].subtitle;
@@ -1949,21 +1921,6 @@
             if (viewId === 'materials') loadMaterialsList();
             if (viewId === 'analytics') loadAnalytics();
         }
-
-        // 3-Way Theme Switcher (Dark, Light, Warm)
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('app-theme', theme);
-
-            // Update active state on buttons
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`theme-btn-${theme}`);
-            if (activeBtn) activeBtn.classList.add('active');
-        }
-
-        // Restore saved theme on startup
-        const savedTheme = localStorage.getItem('app-theme') || 'dark';
-        setTheme(savedTheme);
 
         // Initialize Speech Recognition
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1989,7 +1946,6 @@
             };
         }
 
-        // Voice Input
         function toggleVoiceInput() {
             if (!speechRecognition) {
                 alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
@@ -2040,6 +1996,73 @@
             sendMessage();
         }
 
+        // Drag & Drop onto Chat Area
+        function handleChatDragOver(event) {
+            event.preventDefault();
+            document.getElementById('chat-drag-overlay').classList.add('active');
+        }
+
+        function handleChatDragLeave(event) {
+            event.preventDefault();
+            document.getElementById('chat-drag-overlay').classList.remove('active');
+        }
+
+        function handleChatDrop(event) {
+            event.preventDefault();
+            document.getElementById('chat-drag-overlay').classList.remove('active');
+            const files = event.dataTransfer.files;
+            if (files && files.length > 0) {
+                uploadChatFile(files[0]);
+            }
+        }
+
+        function handleChatFileUpload(event) {
+            const files = event.target.files;
+            if (files && files.length > 0) {
+                uploadChatFile(files[0]);
+            }
+        }
+
+        async function uploadChatFile(file) {
+            const banner = document.getElementById('attached-doc-banner');
+            const title = document.getElementById('attached-doc-title');
+            const status = document.getElementById('attached-doc-status');
+            
+            banner.classList.add('active');
+            title.textContent = file.name;
+            status.innerHTML = `<span class="spinner" style="width:12px; height:12px;"></span> Indexing document...`;
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            try {
+                const resp = await fetch('/api/upload-files', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    status.textContent = `(Indexed ${data.chunks_created || ''} chunks - Active)`;
+                    currentAttachedFile = file.name;
+                    loadMaterialsList();
+                    checkHealth();
+                    // Provide helpful notification in chat
+                    renderAssistantMessage(`✅ I have successfully ingested and indexed **${escapeHtml(file.name)}** into the knowledge base! What would you like to know or solve from it?`);
+                    document.getElementById('chat-input').placeholder = `Ask anything about ${file.name}...`;
+                } else {
+                    status.textContent = `(Upload error: ${data.message || 'Failed'})`;
+                }
+            } catch (err) {
+                status.textContent = `(Error: ${err.message})`;
+            }
+        }
+
+        function detachChatDocument() {
+            document.getElementById('attached-doc-banner').classList.remove('active');
+            currentAttachedFile = null;
+            document.getElementById('chat-input').placeholder = "Ask Professor Nova any academic doubt from your PDF notes...";
+        }
+
         async function sendMessage() {
             const input = document.getElementById('chat-input');
             const question = input.value.trim();
@@ -2088,7 +2111,7 @@
             const row = document.createElement('div');
             row.className = 'message-row user';
             row.innerHTML = `
-                <div class="avatar user-avatar">You</div>
+                <div class="msg-avatar student">You</div>
                 <div class="message-bubble">${escapeHtml(text)}</div>
             `;
             container.appendChild(row);
@@ -2102,10 +2125,10 @@
             row.id = id;
             row.className = 'message-row assistant';
             row.innerHTML = `
-                <div class="avatar assistant-avatar">PN</div>
-                <div class="message-bubble" style="display:flex; align-items:center; gap:8px;">
+                <div class="msg-avatar tutor">PN</div>
+                <div class="message-bubble" style="display:flex; align-items:center; gap:10px;">
                     <span class="spinner"></span>
-                    <span style="color:var(--text-muted); font-size:0.88rem;">Professor Nova is retrieving your PDF materials & synthesizing...</span>
+                    <span style="color:var(--text-muted); font-size:0.9rem;">Professor Nova is retrieving relevant course excerpts & formulating the answer...</span>
                 </div>
             `;
             container.appendChild(row);
@@ -2128,10 +2151,10 @@
             let sourcesHtml = '';
             if (sources && sources.length > 0) {
                 sourcesHtml = `
-                    <div class="sources-bar">
-                        <span class="sources-label">Citations from Materials:</span>
+                    <div class="citations-bar">
+                        <span class="citations-label">Sources Cited:</span>
                         ${sources.map(s => `
-                            <a href="${s.url || '#'}" target="${s.url ? '_blank' : '_self'}" class="source-tag">
+                            <a href="${s.url || '#'}" target="${s.url ? '_blank' : '_self'}" class="citation-tag">
                                 <span>📄</span>
                                 <span>${escapeHtml(s.title)}</span>
                             </a>
@@ -2144,9 +2167,7 @@
             if (followUps && followUps.length > 0) {
                 followUpsHtml = `
                     <div class="follow-ups-container">
-                        <div style="font-size:0.75rem; color:var(--text-dim); font-weight:700; text-transform:uppercase; margin-bottom:2px;">
-                            Recommended Follow-ups:
-                        </div>
+                        <div class="follow-up-title">Recommended Follow-ups:</div>
                         ${followUps.map(q => `
                             <div class="follow-up-pill" onclick="sendQuickPrompt('${escapeHtml(q)}')">
                                 <span>💡</span>
@@ -2159,21 +2180,21 @@
 
             const messageId = 'msg-' + Date.now();
             row.innerHTML = `
-                <div class="avatar assistant-avatar">PN</div>
+                <div class="msg-avatar tutor">PN</div>
                 <div class="message-bubble">
                     <div id="${messageId}">${parsedHtml}</div>
                     ${sourcesHtml}
                     ${followUpsHtml}
                     <div class="bubble-actions">
-                        <button class="btn-mini" onclick="speakText(document.getElementById('${messageId}').innerText)">🔊 Listen</button>
-                        <button class="btn-mini" onclick="navigator.clipboard.writeText(document.getElementById('${messageId}').innerText); alert('Copied to clipboard!')">📋 Copy</button>
+                        <button class="btn-action-mini" onclick="speakText(document.getElementById('${messageId}').innerText)">🔊 Listen</button>
+                        <button class="btn-action-mini" onclick="navigator.clipboard.writeText(document.getElementById('${messageId}').innerText); alert('Copied to clipboard!')">📋 Copy</button>
                     </div>
                 </div>
             `;
 
             container.appendChild(row);
 
-            // Highlight syntax in code blocks
+            // Syntax highlighting
             row.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
@@ -2181,7 +2202,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // File Drag & Drop Handling
+        // File Drag & Drop Handling in Materials Tab
         const dropzone = document.getElementById('file-dropzone');
         ['dragenter', 'dragover'].forEach(name => {
             dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }, false);
@@ -2338,11 +2359,11 @@
                 const summary = document.getElementById('materials-count-summary');
 
                 const sources = data.sources || [];
-                summary.textContent = `${sources.length} document sources (${data.total_chunks || 0} indexed chunks)`;
+                summary.textContent = `${sources.length} document source(s) (${data.total_chunks || 0} indexed chunks)`;
                 document.getElementById('badge-materials').textContent = `${sources.length} Docs`;
 
                 if (sources.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:24px;">No materials uploaded yet. Upload a PDF, lecture slides, or a YouTube video to begin!</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-subtle); padding:24px;">No materials uploaded yet. Upload a PDF or lecture slides to begin!</td></tr>`;
                     return;
                 }
 
@@ -2351,10 +2372,10 @@
                     return `
                         <tr>
                             <td><strong>${escapeHtml(s.source)}</strong></td>
-                            <td><span class="tag-type ${tagClass}">${s.type}</span></td>
+                            <td><span class="tag-type ${tagClass}">${escapeHtml(s.type)}</span></td>
                             <td>${s.chunks}</td>
                             <td>
-                                <button class="btn-mini" onclick="deleteSource('${escapeHtml(s.source)}')" style="color:var(--danger);">Delete</button>
+                                <button class="btn-action-mini" onclick="deleteSource('${escapeHtml(s.source)}')" style="color:#dc2626;">Delete</button>
                             </td>
                         </tr>
                     `;
@@ -2578,17 +2599,17 @@
                 const history = data.recent_history || [];
 
                 if (history.length === 0) {
-                    historyTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">No doubts recorded yet. Ask a question in Tutor Chat!</td></tr>`;
+                    historyTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-subtle); padding:20px;">No doubts recorded yet. Ask a question in Tutor Chat!</td></tr>`;
                     return;
                 }
 
                 historyTbody.innerHTML = history.map(h => `
                     <tr>
-                        <td style="color:var(--text-dim); font-size:0.8rem;">${h.timestamp}</td>
+                        <td style="color:var(--text-subtle); font-size:0.8rem;">${h.timestamp}</td>
                         <td><strong>${escapeHtml(h.question)}</strong></td>
                         <td style="color:var(--text-muted); font-size:0.82rem;">${escapeHtml(h.answer_preview)}</td>
                         <td>
-                            <button class="btn-mini" onclick="sendQuickPrompt('${escapeHtml(h.question)}')">Re-ask</button>
+                            <button class="btn-action-mini" onclick="sendQuickPrompt('${escapeHtml(h.question)}')">Re-ask</button>
                         </td>
                     </tr>
                 `).join('');
@@ -2643,14 +2664,16 @@
                 }
 
                 if (data.api_key_configured) {
-                    dot.className = 'status-dot active';
+                    dot.className = 'status-dot';
+                    dot.style.background = '#10b981';
                     text.textContent = 'Gemini 2.5 Active';
                 } else {
                     dot.className = 'status-dot';
+                    dot.style.background = '#d97706';
                     text.textContent = 'API Key Needed (Settings)';
                 }
 
-                document.getElementById('badge-materials').textContent = `${data.total_documents || 0} Docs`;
+                document.getElementById('badge-materials').textContent = `${data.total_documents || 1} Docs`;
             } catch (e) {
                 console.error("Health check failed", e);
             }

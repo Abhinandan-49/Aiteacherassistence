@@ -235,16 +235,14 @@ class AITeachingAssistant:
             }
 
         try:
-            # Call Gemini
+            # Call Gemini with proper system_instruction
             response = client.models.generate_content(
                 model=self.model_name,
-                contents=[
-                    system_instruction,
-                    user_prompt
-                ],
+                contents=user_prompt,
                 config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
                     temperature=Config.TEMPERATURE,
-                    max_output_tokens=2048
+                    max_output_tokens=2500
                 )
             )
 
